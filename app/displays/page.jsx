@@ -57,7 +57,7 @@ export default function DisplaysPage() {
           title="Display"
           subtitle="Gestisci i display connessi e invia comandi in tempo reale"
         />
-
+		<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <main className="flex-1 px-8 py-6">
           <div className="flex items-center justify-between mb-4">
             <div>

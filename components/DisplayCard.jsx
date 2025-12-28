@@ -22,6 +22,8 @@ export function DisplayCard({ display }) {
 
   return (
     <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 shadow-[0_18px_40px_rgba(0,0,0,0.6)] flex flex-col justify-between">
+      
+      {/* HEADER */}
       <div className="flex items-start justify-between gap-2">
         <div>
           <h2 className="text-base font-semibold">
@@ -31,6 +33,7 @@ export function DisplayCard({ display }) {
             ID: {display.id}
           </p>
         </div>
+
         <div
           className={
             "px-2 py-1 rounded-full text-[10px] font-medium flex items-center gap-1 " +
@@ -49,6 +52,7 @@ export function DisplayCard({ display }) {
         </div>
       </div>
 
+      {/* INFO */}
       <div className="mt-3 space-y-1">
         <p className="text-xs text-slate-400">
           Ultimo contatto:{" "}
@@ -64,26 +68,29 @@ export function DisplayCard({ display }) {
         </p>
       </div>
 
+      {/* BUTTONS */}
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           onClick={() => sendCommand("run")}
-          className="px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500 hover:bg-emerald-400 text-emerald-950 transition-colors"
+          className="px-4 py-2 text-sm md:text-xs rounded-full font-medium bg-emerald-500 hover:bg-emerald-400 text-emerald-950 transition-colors"
         >
           ▶ Run
         </button>
+
         <button
           onClick={() => sendCommand("stop")}
-          className="px-3 py-1.5 rounded-full text-xs font-medium bg-rose-500 hover:bg-rose-400 text-rose-950 transition-colors"
+          className="px-4 py-2 text-sm md:text-xs rounded-full font-medium bg-rose-500 hover:bg-rose-400 text-rose-950 transition-colors"
         >
           ■ Stop
         </button>
+
         <button
           onClick={() =>
             sendCommand("updatePlaylist", {
               playlist_id: display.default_playlist_id || null,
             })
           }
-          className="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-100 border border-slate-700 transition-colors"
+          className="px-4 py-2 text-sm md:text-xs rounded-full font-medium bg-slate-900 hover:bg-slate-800 text-slate-100 border border-slate-700 transition-colors"
         >
           🔄 Cambia playlist
         </button>

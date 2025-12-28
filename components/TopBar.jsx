@@ -16,6 +16,10 @@ export function TopBar({ title, subtitle }) {
         </div>
         <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500" />
       </div>
+		<button className="md:hidden p-2 rounded-lg bg-slate-800">
+		☰
+		</button>
+
     </header>
   );
 }
