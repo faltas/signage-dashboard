@@ -57,7 +57,7 @@ export default function DisplaysPage() {
       <Sidebar />
 
       {/* Sidebar mobile */}
-      <MobileSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Contenuto */}
       <div className="flex-1 flex flex-col">
