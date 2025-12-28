@@ -10,7 +10,7 @@ const menuItems = [
   { href: "/settings", label: "Impostazioni" },
 ];
 
-export function MobileSidebar({ open, onClose }) {
+export function MobileSideBar({ open, onClose }) {
   const pathname = usePathname();
 
   return (
