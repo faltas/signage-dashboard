@@ -14,7 +14,8 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-	<aside className="hidden md:flex w-64 h-screen bg-slate-950 border-r border-slate-800 flex-col">
+    <aside className="hidden md:flex w-64 h-screen bg-slate-950 border-r border-slate-800 flex-col">
+      {/* Header */}
       <div className="px-6 py-6 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-indigo-500 shadow-lg shadow-indigo-500/40" />
@@ -22,13 +23,12 @@ export function Sidebar() {
             <div className="text-sm font-semibold tracking-wide">
               Signage Cloud
             </div>
-            <div className="text-[11px] text-slate-400">
-              Dashboard
-            </div>
+            <div className="text-[11px] text-slate-400">Dashboard</div>
           </div>
         </div>
       </div>
 
+      {/* Menu */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         {menuItems.map((item) => {
           const active = pathname?.startsWith(item.href);
