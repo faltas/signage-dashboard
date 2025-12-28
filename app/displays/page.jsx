@@ -5,25 +5,22 @@ import { supabase } from "@/lib/supabaseClient";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
-import { DisplayCard } from "@/components/DisplayCard";
+import Link from "next/link";
 
 export default function DisplaysPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [displays, setDisplays] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   async function loadDisplays() {
     setLoading(true);
-    const { data, error } = await supabase
+
+    const { data } = await supabase
       .from("displays")
-      .select("*")
+      .select("*, playlists(name)")
       .order("name", { ascending: true });
 
-    if (error) {
-      console.error("Errore caricamento displays:", error);
-    } else {
-      setDisplays(data || []);
-    }
+    setDisplays(data || []);
     setLoading(false);
   }
 
@@ -31,35 +28,28 @@ export default function DisplaysPage() {
     loadDisplays();
 
     const channel = supabase
-      .channel("displays-changes")
+      .channel("displays-realtime")
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "displays",
-        },
-        () => {
-          loadDisplays();
-        }
+        { event: "*", schema: "public", table: "displays" },
+        () => loadDisplays()
       )
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
   }, []);
+
+  function isOnline(lastSeen) {
+    if (!lastSeen) return false;
+    const diff = (Date.now() - new Date(lastSeen).getTime()) / 1000;
+    return diff < 20; // 20 secondi = online
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
-
-      {/* Sidebar desktop */}
       <Sidebar />
-
-      {/* Sidebar mobile */}
       <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-      {/* Contenuto */}
       <div className="flex-1 flex flex-col">
         <TopBar
           title="Display"
@@ -68,35 +58,56 @@ export default function DisplaysPage() {
         />
 
         <main className="flex-1 px-6 md:px-8 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">
-                Tutti i display
-              </div>
-              <div className="text-xs text-slate-500 mt-1">
-                {loading
-                  ? "Caricamento in corso..."
-                  : `${displays.length} display trovati`}
-              </div>
+          <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-4">
+            Tutti i display
+          </div>
+
+          {loading ? (
+            <div className="text-sm text-slate-500">Caricamento...</div>
+          ) : displays.length === 0 ? (
+            <div className="text-sm text-slate-500 mt-10 text-center">
+              Nessun display registrato.
             </div>
+          ) : (
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {displays.map((d) => (
+                <div
+                  key={d.id}
+                  className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-semibold">{d.name}</div>
+                    <div
+                      className={`w-2.5 h-2.5 rounded-full ${
+                        isOnline(d.last_seen_at)
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
+                    />
+                  </div>
 
-            <button className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-500 hover:bg-indigo-400 text-white shadow-lg shadow-indigo-500/40">
-              + Aggiungi display
-            </button>
-          </div>
+                  <div className="text-xs text-slate-500">
+                    Playlist:{" "}
+                    {d.playlists?.name || (
+                      <span className="text-slate-600">Nessuna</span>
+                    )}
+                  </div>
 
-          {/* Griglia card */}
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {displays.map((d) => (
-              <DisplayCard key={d.id} display={d} />
-            ))}
-          </div>
+                  <div className="text-xs text-slate-500">
+                    Ultimo contatto:{" "}
+                    {d.last_seen_at
+                      ? new Date(d.last_seen_at).toLocaleString()
+                      : "Mai"}
+                  </div>
 
-          {/* Nessun display */}
-          {!loading && displays.length === 0 && (
-            <div className="mt-10 text-center text-sm text-slate-500">
-              Nessun display registrato. Aggiungine uno dalla UI
-              o inseriscilo nella tabella <code>displays</code> di Supabase.
+                  <Link
+                    href={`/displays/${d.id}`}
+                    className="mt-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700 text-slate-100 hover:bg-slate-800 text-center"
+                  >
+                    Dettagli
+                  </Link>
+                </div>
+              ))}
             </div>
           )}
         </main>
