@@ -39,11 +39,13 @@ export default function DisplaysPage() {
     return () => supabase.removeChannel(channel);
   }, []);
 
-  function isOnline(lastSeen) {
-    if (!lastSeen) return false;
-    const diff = (Date.now() - new Date(lastSeen).getTime()) / 1000;
-    return diff < 20; // 20 secondi = online
-  }
+function IsOnline(status) {
+  if (status === "on") return "green";
+  if (status === "off") return "red";
+  if (status === "mgmt") return "orange";
+  return "gray";
+}
+
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
@@ -79,7 +81,7 @@ export default function DisplaysPage() {
                     <div className="text-sm font-semibold">{d.name}</div>
                     <div
                       className={`w-2.5 h-2.5 rounded-full ${
-                        isOnline(d.last_seen_at)
+                        IsOnline(d.status)
                           ? "bg-green-500"
                           : "bg-red-500"
                       }`}
