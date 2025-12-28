@@ -40,10 +40,10 @@ export default function DisplaysPage() {
   }, []);
 
 function IsOnline(status) {
-  if (status === "on") return "green";
-  if (status === "off") return "red";
-  if (status === "mgmt") return "orange";
-  return "gray";
+  if (status === "on") return "bg-green-500";
+  if (status === "off") return "bg-red-500";
+  if (status === "mgmt") return "bg-orange-500";
+  return "bg-gray-500";
 }
 
 
@@ -82,8 +82,6 @@ function IsOnline(status) {
                     <div
                       className={`w-2.5 h-2.5 rounded-full ${
                         IsOnline(d.status)
-                          ? "bg-green-500"
-                          : "bg-red-500"
                       }`}
                     />
                   </div>
