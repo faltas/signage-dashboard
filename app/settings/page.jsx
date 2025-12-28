@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
-import { MobileSidebar } from "@/components/MobileSidebar";
+import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 
 export default function SettingsPage() {
@@ -12,7 +12,7 @@ export default function SettingsPage() {
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
 
       <Sidebar />
-      <MobileSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <div className="flex-1 flex flex-col">
         <TopBar
