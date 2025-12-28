@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Sidebar } from "@/components/Sidebar";
-import { MobileSidebar } from "@/components/MobileSidebar";
+import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { DisplayCard } from "@/components/DisplayCard";
 
