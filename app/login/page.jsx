@@ -9,22 +9,6 @@ import { FaApple, FaMicrosoft } from "react-icons/fa";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [ready, setReady] = useState(false);
-
-  // 🔐 Se l'utente è già loggato → vai a /displays
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        router.replace("/displays");
-      } else {
-        setReady(true);
-      }
-    });
-  }, [router]);
-
-  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
-  if (!ready) return null;
-
   // login | signup | reset
   const [mode, setMode] = useState("login");
 
