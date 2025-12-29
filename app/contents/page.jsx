@@ -7,7 +7,6 @@ import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
 
-
 function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return "-";
   const sizes = ["B", "KB", "MB", "GB"];
@@ -16,24 +15,24 @@ function formatBytes(bytes) {
 }
 
 export default function ContentsPage() {
-	
   const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [ready, setReady] = useState(false);
 
+  // 🔐 Protezione login (semplice e identica a tutte le pagine)
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         router.replace("/login");
       } else {
-        setCheckingAuth(false);
+        setReady(true);
       }
     });
   }, [router]);
 
-  if (checkingAuth) {
-    return null; // nessun flash della pagina
-  }
-  
+  // ⛔ Finché non sappiamo se l’utente è loggato, non renderizziamo nulla
+  if (!ready) return null;
+
+  // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +40,7 @@ export default function ContentsPage() {
   const [file, setFile] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // 📡 Caricamento contenuti
   async function loadContents() {
     setLoading(true);
     const { data, error } = await supabase
@@ -62,6 +62,7 @@ export default function ContentsPage() {
     loadContents();
   }, []);
 
+  // 📤 Upload contenuto
   async function handleUpload(e) {
     e.preventDefault();
     if (!file) return;
@@ -74,7 +75,7 @@ export default function ContentsPage() {
       const path = `${Date.now()}-${file.name}`;
       const contentType = file.type || "application/octet-stream";
 
-      // 1) upload su Storage
+      // 1) Upload su Storage
       const { data: storageData, error: storageError } = await supabase.storage
         .from("contents")
         .upload(path, file, {
@@ -95,14 +96,14 @@ export default function ContentsPage() {
         data: { publicUrl },
       } = supabase.storage.from("contents").getPublicUrl(storageData.path);
 
-      // 3) determina tipo logico
+      // 3) Tipo logico
       let type = "altro";
       if (contentType.startsWith("image/")) type = "immagine";
       else if (contentType.startsWith("video/")) type = "video";
       else if (contentType === "application/pdf") type = "documento";
       else if (ext === "html") type = "html";
 
-      // 4) salva record in tabella
+      // 4) Salva record in tabella
       const { error: insertError } = await supabase.from("contents").insert({
         name: file.name,
         type,
@@ -127,10 +128,10 @@ export default function ContentsPage() {
     }
   }
 
+  // 🗑️ Eliminazione contenuto
   async function handleDelete(id, url) {
     if (!confirm("Sei sicuro di voler eliminare questo contenuto?")) return;
 
-    // prova a eliminare anche dal bucket (best effort)
     try {
       const parts = url.split("/contents/");
       if (parts[1]) {
@@ -150,6 +151,7 @@ export default function ContentsPage() {
     }
   }
 
+  // 🎨 Render pagina
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />
@@ -183,12 +185,9 @@ export default function ContentsPage() {
             className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/40 px-4 py-4 md:px-6 md:py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
           >
             <div>
-              <div className="text-sm font-medium">
-                Carica nuovo contenuto
-              </div>
+              <div className="text-sm font-medium">Carica nuovo contenuto</div>
               <div className="text-xs text-slate-500 mt-1">
-                Supporta immagini, video, PDF e altri file. Il file verrà salvato su
-                Supabase Storage.
+                Supporta immagini, video, PDF e altri file.
               </div>
             </div>
 
@@ -208,11 +207,7 @@ export default function ContentsPage() {
             </div>
           </form>
 
-          {errorMsg && (
-            <div className="text-xs text-red-400">
-              {errorMsg}
-            </div>
-          )}
+          {errorMsg && <div className="text-xs text-red-400">{errorMsg}</div>}
 
           {/* Lista contenuti */}
           <div>
@@ -220,8 +215,7 @@ export default function ContentsPage() {
               <div className="text-sm text-slate-500">Caricamento contenuti...</div>
             ) : contents.length === 0 ? (
               <div className="mt-10 text-center text-sm text-slate-500">
-                Nessun contenuto ancora caricato. Seleziona un file e clicca{" "}
-                <span className="text-slate-300 font-medium">“Carica”</span> per iniziare.
+                Nessun contenuto ancora caricato.
               </div>
             ) : (
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -230,7 +224,6 @@ export default function ContentsPage() {
                     key={c.id}
                     className="rounded-xl border border-slate-800 bg-slate-900/50 overflow-hidden flex flex-col"
                   >
-                    {/* Preview grezza per immagini */}
                     {c.type === "immagine" ? (
                       <div className="h-32 bg-slate-900 border-b border-slate-800 overflow-hidden flex items-center justify-center">
                         <img

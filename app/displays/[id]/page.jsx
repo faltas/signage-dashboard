@@ -8,25 +8,27 @@ import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 
 export default function DisplayDetailPage() {
-  const router = useRouter();
   const { id } = useParams();
+  const router = useRouter();
 
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [ready, setReady] = useState(false);
 
+  // 🔐 Protezione login
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         router.replace("/login");
       } else {
-        setCheckingAuth(false);
+        setReady(true);
       }
     });
   }, [router]);
 
-  if (checkingAuth) return null;
+  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
+  if (!ready) return null;
 
+  // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
-
   const [display, setDisplay] = useState(null);
   const [playlist, setPlaylist] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -42,7 +44,7 @@ export default function DisplayDetailPage() {
   async function loadData() {
     setLoading(true);
 
-    // DISPLAY + RELAZIONE CORRETTA
+    // DISPLAY + RELAZIONE
     const { data: d, error: dErr } = await supabase
       .from("displays")
       .select(`
@@ -84,7 +86,10 @@ export default function DisplayDetailPage() {
     setLoading(false);
   }
 
+  // 🔄 Caricamento dati SOLO dopo ready
   useEffect(() => {
+    if (!ready || !id) return;
+
     loadData();
 
     const channel = supabase
@@ -97,7 +102,7 @@ export default function DisplayDetailPage() {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [id]);
+  }, [ready, id]);
 
   async function sendCommand(cmd) {
     await supabase.from("display_logs").insert({
@@ -131,8 +136,7 @@ export default function DisplayDetailPage() {
                   <div>
                     <div className="text-sm font-semibold">{display.name}</div>
                     <div className="text-xs text-slate-500 mt-1">
-                      Playlist assegnata:{" "}
-                      {playlist ? playlist.name : "Nessuna"}
+                      Playlist assegnata: {playlist ? playlist.name : "Nessuna"}
                     </div>
                     <div className="text-xs text-slate-500 mt-1">
                       Ultimo contatto:{" "}

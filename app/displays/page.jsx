@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 
 export default function DisplaysPage() {
   const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [ready, setReady] = useState(false);
 
   // 🔐 Protezione login
   useEffect(() => {
@@ -18,13 +18,15 @@ export default function DisplaysPage() {
       if (!data.session) {
         router.replace("/login");
       } else {
-        setCheckingAuth(false);
+        setReady(true);
       }
     });
   }, [router]);
 
-  if (checkingAuth) return null;
+  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
+  if (!ready) return null;
 
+  // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
   const [displays, setDisplays] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,8 +57,10 @@ export default function DisplaysPage() {
     setLoading(false);
   }
 
-  // 🔄 Realtime + primo caricamento
+  // 🔄 Realtime + primo caricamento (SOLO dopo ready)
   useEffect(() => {
+    if (!ready) return;
+
     loadDisplays();
 
     const channel = supabase
@@ -69,7 +73,7 @@ export default function DisplaysPage() {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, []);
+  }, [ready]);
 
   // 🟢 Stato online/offline
   function IsOnline(status) {
@@ -79,6 +83,7 @@ export default function DisplaysPage() {
     return "bg-gray-500";
   }
 
+  // 🎨 Render pagina
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />

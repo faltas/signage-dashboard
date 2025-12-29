@@ -7,31 +7,28 @@ import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-
 export default function SettingsPage() {
-  
   const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [ready, setReady] = useState(false);
 
+  // 🔐 Protezione login
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         router.replace("/login");
       } else {
-        setCheckingAuth(false);
+        setReady(true);
       }
     });
   }, [router]);
 
-  if (checkingAuth) {
-    return null; // nessun flash della pagina
-  }
+  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
+  if (!ready) return null;
 
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
-
       <Sidebar />
       <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
 

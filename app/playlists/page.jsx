@@ -9,24 +9,24 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function PlaylistsPage() {
-		
   const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [ready, setReady] = useState(false);
 
+  // 🔐 Protezione login
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         router.replace("/login");
       } else {
-        setCheckingAuth(false);
+        setReady(true);
       }
     });
   }, [router]);
 
-  if (checkingAuth) {
-    return null; // nessun flash della pagina
-  }
+  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
+  if (!ready) return null;
 
+  // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +34,7 @@ export default function PlaylistsPage() {
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
 
+  // 📡 Caricamento playlist
   async function loadPlaylists() {
     setLoading(true);
     const { data, error } = await supabase
@@ -41,13 +42,15 @@ export default function PlaylistsPage() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (!error) setPlaylists(data);
+    if (!error) setPlaylists(data || []);
     setLoading(false);
   }
 
+  // 🔄 Primo caricamento SOLO dopo ready
   useEffect(() => {
+    if (!ready) return;
     loadPlaylists();
-  }, []);
+  }, [ready]);
 
   async function createPlaylist(e) {
     e.preventDefault();

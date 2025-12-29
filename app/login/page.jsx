@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
@@ -8,6 +8,22 @@ import { FaApple, FaMicrosoft } from "react-icons/fa";
 
 export default function LoginPage() {
   const router = useRouter();
+
+  const [ready, setReady] = useState(false);
+
+  // 🔐 Se l'utente è già loggato → vai a /displays
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        router.replace("/displays");
+      } else {
+        setReady(true);
+      }
+    });
+  }, [router]);
+
+  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
+  if (!ready) return null;
 
   // login | signup | reset
   const [mode, setMode] = useState("login");
@@ -31,7 +47,7 @@ export default function LoginPage() {
 
     if (error) return setError(error.message);
 
-        router.push("/displays");
+    router.push("/displays");
   }
 
   // SIGNUP
@@ -179,7 +195,6 @@ export default function LoginPage() {
               Oppure continua con
             </div>
 
-            {/* MOBILE: colonna | DESKTOP: riga */}
             <div className="flex flex-col sm:flex-row gap-3 mt-4">
               <button
                 onClick={() => loginWith("google")}

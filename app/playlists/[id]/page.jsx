@@ -1,44 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { useRouter } from "next/navigation";
-
 
 export default function PlaylistDetailPage() {
-
   const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const { id } = useParams();
 
+  const [ready, setReady] = useState(false);
+
+  // 🔐 Protezione login
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         router.replace("/login");
       } else {
-        setCheckingAuth(false);
+        setReady(true);
       }
     });
   }, [router]);
 
-  if (checkingAuth) {
-    return null; // nessun flash della pagina
-  }
+  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
+  if (!ready) return null;
 
-  const { id } = useParams();
+  // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
-
   const [playlist, setPlaylist] = useState(null);
   const [items, setItems] = useState([]);
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // 📡 Caricamento dati playlist
   async function loadData() {
     setLoading(true);
 
@@ -71,9 +69,11 @@ export default function PlaylistDetailPage() {
     setLoading(false);
   }
 
+  // 🔄 Caricamento SOLO dopo ready
   useEffect(() => {
+    if (!ready || !id) return;
     loadData();
-  }, [id]);
+  }, [ready, id]);
 
   async function addContentToPlaylist(contentId) {
     const newPosition = items.length;
@@ -82,7 +82,7 @@ export default function PlaylistDetailPage() {
       playlist_id: id,
       content_id: contentId,
       position: newPosition,
-      duration_seconds: 10, // default
+      duration_seconds: 10,
     });
 
     setShowAddModal(false);
@@ -96,7 +96,6 @@ export default function PlaylistDetailPage() {
     const [moved] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, moved);
 
-    // aggiorna posizione locale
     const updated = reordered.map((item, index) => ({
       ...item,
       position: index,
@@ -104,7 +103,6 @@ export default function PlaylistDetailPage() {
 
     setItems(updated);
 
-    // salva su Supabase
     for (const item of updated) {
       await supabase
         .from("playlist_items")
