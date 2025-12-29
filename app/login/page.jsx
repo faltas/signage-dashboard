@@ -31,7 +31,7 @@ export default function LoginPage() {
 
     if (error) return setError(error.message);
 
-    router.push("/display");
+        router.push("/displays");
   }
 
   // SIGNUP
