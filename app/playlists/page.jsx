@@ -8,6 +8,24 @@ import { TopBar } from "@/components/TopBar";
 import Link from "next/link";
 
 export default function PlaylistsPage() {
+		
+  const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        router.replace("/login");
+      } else {
+        setCheckingAuth(false);
+      }
+    });
+  }, [router]);
+
+  if (checkingAuth) {
+    return null; // nessun flash della pagina
+  }
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);

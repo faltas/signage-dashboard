@@ -12,12 +12,21 @@ import { useRouter } from "next/navigation";
 export default function DisplayDetailPage() {
 	
   const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) router.push("/login");
+      if (!data.session) {
+        router.replace("/login");
+      } else {
+        setCheckingAuth(false);
+      }
     });
-  }, []);
+  }, [router]);
+
+  if (checkingAuth) {
+    return null; // nessun flash della pagina
+  }
   
   const { id } = useParams();
   const [menuOpen, setMenuOpen] = useState(false);

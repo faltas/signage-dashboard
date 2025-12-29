@@ -90,7 +90,7 @@ export default function LoginPage() {
             onClick={() => loginWith("azure")}
             className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition"
           >
-            <FaMicrosoft size={22} />
+            <FaMicrosoft size={22}  />
             Microsoft
           </button>
         </div>
