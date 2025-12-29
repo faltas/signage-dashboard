@@ -8,12 +8,11 @@ import { TopBar } from "@/components/TopBar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-
 export default function DisplaysPage() {
-  
   const router = useRouter();
   const [checkingAuth, setCheckingAuth] = useState(true);
 
+  // 🔐 Protezione login
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
@@ -24,26 +23,39 @@ export default function DisplaysPage() {
     });
   }, [router]);
 
-  if (checkingAuth) {
-    return null; // nessun flash della pagina
-  }
-	
+  if (checkingAuth) return null;
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [displays, setDisplays] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 📡 Caricamento display + relazione playlist
   async function loadDisplays() {
     setLoading(true);
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("displays")
-      .select("*, playlists(name)")
+      .select(`
+        id,
+        name,
+        status,
+        last_seen_at,
+        playlist_id,
+        playlists:playlist_id ( name )
+      `)
       .order("name", { ascending: true });
 
-    setDisplays(data || []);
+    if (error) {
+      console.error("Errore caricamento displays:", error);
+      setDisplays([]);
+    } else {
+      setDisplays(data || []);
+    }
+
     setLoading(false);
   }
 
+  // 🔄 Realtime + primo caricamento
   useEffect(() => {
     loadDisplays();
 
@@ -59,13 +71,13 @@ export default function DisplaysPage() {
     return () => supabase.removeChannel(channel);
   }, []);
 
-function IsOnline(status) {
-  if (status === "on") return "bg-green-500";
-  if (status === "off") return "bg-red-500";
-  if (status === "mgmt") return "bg-orange-500";
-  return "bg-gray-500";
-}
-
+  // 🟢 Stato online/offline
+  function IsOnline(status) {
+    if (status === "on") return "bg-green-500";
+    if (status === "off") return "bg-red-500";
+    if (status === "mgmt") return "bg-orange-500";
+    return "bg-gray-500";
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
@@ -100,9 +112,7 @@ function IsOnline(status) {
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-semibold">{d.name}</div>
                     <div
-                      className={`w-2.5 h-2.5 rounded-full ${
-                        IsOnline(d.status)
-                      }`}
+                      className={`w-2.5 h-2.5 rounded-full ${IsOnline(d.status)}`}
                     />
                   </div>
 
