@@ -26,7 +26,7 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     });
 
     if (error) return setError(error.message);
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signUp({
       email,
-      password
+      password,
     });
 
     if (error) return setError(error.message);
@@ -79,9 +79,7 @@ export default function LoginPage() {
         </h1>
 
         {error && (
-          <div className="text-red-400 text-sm mb-4 text-center">
-            {error}
-          </div>
+          <div className="text-red-400 text-sm mb-4 text-center">{error}</div>
         )}
 
         {message && (
@@ -101,20 +99,24 @@ export default function LoginPage() {
           }
           className="flex flex-col gap-4"
         >
+          {/* EMAIL */}
           <input
             type="email"
             placeholder="Email"
-            className="px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none"
+            className="px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 
+                       focus:border-blue-500 focus:bg-slate-800 focus:text-white outline-none"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
 
+          {/* PASSWORD */}
           {mode !== "reset" && (
             <div className="flex flex-col">
               <input
                 type="password"
                 placeholder="Password"
-                className="px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none"
+                className="px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 
+                           focus:border-blue-500 focus:bg-slate-800 focus:text-white outline-none"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -132,6 +134,7 @@ export default function LoginPage() {
             </div>
           )}
 
+          {/* SUBMIT */}
           <button className="bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold transition cursor-pointer">
             {mode === "login" && "Accedi"}
             {mode === "signup" && "Crea account"}
@@ -140,23 +143,30 @@ export default function LoginPage() {
         </form>
 
         {/* SWITCH MODES */}
-        <div className="text-center text-xs text-slate-400 mt-4 cursor-pointer">
+        <div className="text-center text-xs text-slate-400 mt-4">
           {mode === "login" && (
-            <>
-              <button onClick={() => setMode("signup")} className="underline">
-                Crea un nuovo account
-              </button>
-            </>
+            <button
+              onClick={() => setMode("signup")}
+              className="underline cursor-pointer"
+            >
+              Crea un nuovo account
+            </button>
           )}
 
           {mode === "signup" && (
-            <button onClick={() => setMode("login")} className="underline">
+            <button
+              onClick={() => setMode("login")}
+              className="underline cursor-pointer"
+            >
               Hai già un account? Accedi
             </button>
           )}
 
           {mode === "reset" && (
-            <button onClick={() => setMode("login")} className="underline">
+            <button
+              onClick={() => setMode("login")}
+              className="underline cursor-pointer"
+            >
               Torna al login
             </button>
           )}
@@ -169,10 +179,12 @@ export default function LoginPage() {
               Oppure continua con
             </div>
 
-            <div className="flex gap-3 mt-4">
+            {/* MOBILE: colonna | DESKTOP: riga */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-4">
               <button
                 onClick={() => loginWith("google")}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg 
+                           border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
               >
                 <FcGoogle size={22} />
                 Google
@@ -180,7 +192,8 @@ export default function LoginPage() {
 
               <button
                 onClick={() => loginWith("apple")}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg 
+                           border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
               >
                 <FaApple size={22} />
                 Apple
@@ -188,7 +201,8 @@ export default function LoginPage() {
 
               <button
                 onClick={() => loginWith("azure")}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg 
+                           border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
               >
                 <FaMicrosoft size={22} />
                 Microsoft
