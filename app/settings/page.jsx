@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 
 export default function SettingsPage() {
