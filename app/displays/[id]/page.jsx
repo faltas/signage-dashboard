@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
-import { useRouter } from "next/navigation";
-
 
 export default function DisplayDetailPage() {
-	
   const router = useRouter();
+  const { id } = useParams();
+
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
@@ -24,11 +23,8 @@ export default function DisplayDetailPage() {
     });
   }, [router]);
 
-  if (checkingAuth) {
-    return null; // nessun flash della pagina
-  }
-  
-  const { id } = useParams();
+  if (checkingAuth) return null;
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [display, setDisplay] = useState(null);
@@ -46,17 +42,26 @@ export default function DisplayDetailPage() {
   async function loadData() {
     setLoading(true);
 
-    // display
-    const { data: d } = await supabase
+    // DISPLAY + RELAZIONE CORRETTA
+    const { data: d, error: dErr } = await supabase
       .from("displays")
-      .select("*, playlists(*)")
+      .select(`
+        id,
+        name,
+        status,
+        last_seen_at,
+        playlist_id,
+        playlists:playlist_id ( name )
+      `)
       .eq("id", id)
       .single();
+
+    if (dErr) console.error("Errore display:", dErr);
 
     setDisplay(d);
     setPlaylist(d?.playlists || null);
 
-    // logs
+    // LOGS
     const { data: l } = await supabase
       .from("display_logs")
       .select("*")
@@ -66,7 +71,7 @@ export default function DisplayDetailPage() {
 
     setLogs(l || []);
 
-    // screenshots
+    // SCREENSHOTS
     const { data: s } = await supabase
       .from("display_screenshots")
       .select("*")
