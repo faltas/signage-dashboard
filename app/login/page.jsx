@@ -9,9 +9,12 @@ import { FaApple, FaMicrosoft } from "react-icons/fa";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [mode, setMode] = useState("login"); // login | signup | reset
+  // login | signup | reset
+  const [mode, setMode] = useState("login");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -107,16 +110,29 @@ export default function LoginPage() {
           />
 
           {mode !== "reset" && (
-            <input
-              type="password"
-              placeholder="Password"
-              className="px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="flex flex-col">
+              <input
+                type="password"
+                placeholder="Password"
+                className="px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 focus:border-blue-500 outline-none"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              {/* PASSWORD DIMENTICATA */}
+              {mode === "login" && (
+                <button
+                  type="button"
+                  onClick={() => setMode("reset")}
+                  className="text-xs text-slate-400 hover:text-slate-200 mt-2 text-left cursor-pointer"
+                >
+                  Password dimenticata?
+                </button>
+              )}
+            </div>
           )}
 
-          <button className="bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold transition">
+          <button className="bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold transition cursor-pointer">
             {mode === "login" && "Accedi"}
             {mode === "signup" && "Crea account"}
             {mode === "reset" && "Invia email di reset"}
@@ -124,20 +140,22 @@ export default function LoginPage() {
         </form>
 
         {/* SWITCH MODES */}
-        <div className="text-center text-xs text-slate-400 mt-4">
+        <div className="text-center text-xs text-slate-400 mt-4 cursor-pointer">
           {mode === "login" && (
             <>
               <button onClick={() => setMode("signup")} className="underline">
                 Crea un nuovo account
               </button>
-              <br />
-              <button onClick={() => setMode("reset")} className="underline mt-2">
-                Password dimenticata
-              </button>
             </>
           )}
 
-          {mode !== "login" && (
+          {mode === "signup" && (
+            <button onClick={() => setMode("login")} className="underline">
+              Hai già un account? Accedi
+            </button>
+          )}
+
+          {mode === "reset" && (
             <button onClick={() => setMode("login")} className="underline">
               Torna al login
             </button>
@@ -154,7 +172,7 @@ export default function LoginPage() {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => loginWith("google")}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition"
+                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
               >
                 <FcGoogle size={22} />
                 Google
@@ -162,7 +180,7 @@ export default function LoginPage() {
 
               <button
                 onClick={() => loginWith("apple")}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition"
+                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
               >
                 <FaApple size={22} />
                 Apple
@@ -170,7 +188,7 @@ export default function LoginPage() {
 
               <button
                 onClick={() => loginWith("azure")}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition"
+                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 py-3 rounded-lg border border-slate-700 hover:bg-slate-700 transition cursor-pointer"
               >
                 <FaMicrosoft size={22} />
                 Microsoft
