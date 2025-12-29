@@ -5,6 +5,16 @@ import { supabase } from "@/lib/supabaseClient";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
+import { useRouter } from "next/navigation";
+
+export default function DisplayPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) router.push("/login");
+    });
+  }, []);
 
 function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return "-";

@@ -7,6 +7,16 @@ import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { useRouter } from "next/navigation";
+
+export default function DisplayPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) router.push("/login");
+    });
+  }, []);
 
 export default function PlaylistDetailPage() {
   const { id } = useParams();

@@ -6,6 +6,16 @@ import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+export default function DisplayPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) router.push("/login");
+    });
+  }, []);
 
 export default function DisplaysPage() {
   const [menuOpen, setMenuOpen] = useState(false);
