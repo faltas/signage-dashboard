@@ -7,14 +7,6 @@ import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
 
-export default function DisplayPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) router.push("/login");
-    });
-  }, []);
 
 function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return "-";
@@ -24,6 +16,15 @@ function formatBytes(bytes) {
 }
 
 export default function ContentsPage() {
+	
+  const router = useRouter();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) router.push("/login");
+    });
+  }, []);
+  
   const [menuOpen, setMenuOpen] = useState(false);
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(true);

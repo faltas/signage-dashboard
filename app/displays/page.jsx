@@ -8,7 +8,9 @@ import { TopBar } from "@/components/TopBar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function DisplayPage() {
+
+export default function DisplaysPage() {
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -16,8 +18,7 @@ export default function DisplayPage() {
       if (!data.session) router.push("/login");
     });
   }, []);
-
-export default function DisplaysPage() {
+	
   const [menuOpen, setMenuOpen] = useState(false);
   const [displays, setDisplays] = useState([]);
   const [loading, setLoading] = useState(true);

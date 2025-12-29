@@ -6,7 +6,9 @@ import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
 
-export default function DisplayPage() {
+
+export default function SettingsPage() {
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -15,7 +17,6 @@ export default function DisplayPage() {
     });
   }, []);
 
-export default function SettingsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (

@@ -9,7 +9,9 @@ import { TopBar } from "@/components/TopBar";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useRouter } from "next/navigation";
 
-export default function DisplayPage() {
+
+export default function PlaylistDetailPage() {
+
   const router = useRouter();
 
   useEffect(() => {
@@ -18,7 +20,6 @@ export default function DisplayPage() {
     });
   }, []);
 
-export default function PlaylistDetailPage() {
   const { id } = useParams();
   const [menuOpen, setMenuOpen] = useState(false);
 
