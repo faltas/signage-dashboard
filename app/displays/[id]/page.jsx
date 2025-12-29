@@ -9,6 +9,7 @@ import { TopBar } from "@/components/TopBar";
 
 export default function DisplayDetailPage() {
   const { id } = useParams();
+  if (!id) return null;
   const router = useRouter();
 
   const [ready, setReady] = useState(false);

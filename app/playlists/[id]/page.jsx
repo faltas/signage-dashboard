@@ -11,6 +11,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 export default function PlaylistDetailPage() {
   const router = useRouter();
   const { id } = useParams();
+  if (!id) return null;
 
   const [ready, setReady] = useState(false);
 
