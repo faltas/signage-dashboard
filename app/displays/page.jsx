@@ -79,7 +79,7 @@ export default function DisplaysPage() {
 
             {/* HEADER */}
             <div className="flex items-center justify-between">
-              <div className="text-xl font-bold uppercase tracking-[0.2em] text-slate-500">
+              <div className="text-xl md:text-xm font-bold uppercase tracking-[0.2em] text-slate-500">
                 Tutti i display
               </div>
 
