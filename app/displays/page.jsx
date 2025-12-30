@@ -75,7 +75,7 @@ export default function DisplaysPage() {
       <div className="flex-1 flex flex-col">
         <TopBar
           title="Display"
-          subtitle="Gestisci i display connessi e invia comandi in tempo reale"
+          subtitle="Gestisci i display connessi"
           onMenuClick={() => setMenuOpen(true)}
         />
 

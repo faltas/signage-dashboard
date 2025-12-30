@@ -60,7 +60,7 @@ export default function PlaylistsPage() {
       <div className="flex-1 flex flex-col">
         <TopBar
           title="Playlist"
-          subtitle="Gestisci le playlist e assegnale ai display"
+          subtitle="Gestisci le playlist"
           onMenuClick={() => setMenuOpen(true)}
         />
 

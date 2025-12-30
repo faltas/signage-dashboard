@@ -146,7 +146,7 @@ export default function ContentsPage() {
       <div className="flex-1 flex flex-col">
         <TopBar
           title="Contenuti"
-          subtitle="Carica immagini, video e file per le tue playlist"
+          subtitle="Carica i contenuti"
           onMenuClick={() => setMenuOpen(true)}
         />
 
