@@ -8,7 +8,6 @@ import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-
 function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return "-";
   const sizes = ["B", "KB", "MB", "GB"];
@@ -29,7 +28,6 @@ export default function ContentsPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
   const [newFolderName, setNewFolderName] = useState("");
 
   const lastClickRef = useRef(null);
@@ -38,400 +36,454 @@ export default function ContentsPage() {
     ? folders.find((f) => f.id === currentFolderId) || null
     : null;
 
-// Carica cartelle dell’utente
-async function loadFolders() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data } = await supabase
-    .from("content_folders")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("name", { ascending: true });
-
-  setFolders(data || []);
-}
-
-// Carica contenuti della cartella corrente
-async function loadContents() {
-  setLoading(true);
-
-  if (!currentFolderId) {
-    setContents([]);
-    setLoading(false);
-    return;
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data } = await supabase
-    .from("contents")
-    .select("*")
-    .eq("folder", currentFolderId)
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-
-  setContents(data || []);
-  setLoading(false);
-}
-
-useEffect(() => {
-  loadFolders();
-}, []);
-
-useEffect(() => {
-  loadContents();
-}, [currentFolderId]);
-
-function openFolder(folderId) {
-  setCurrentFolderId(folderId);
-}
-
-function goRoot() {
-  setCurrentFolderId(null);
-}
-
-function handleFolderClick(folderId) {
-  const now = Date.now();
-  if (lastClickRef.current && now - lastClickRef.current < 300) {
-    openFolder(folderId);
-  }
-  lastClickRef.current = now;
-}
-
-// CREA CARTELLA (con user_id)
-async function createFolder() {
-  if (!newFolderName.trim()) return;
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  await supabase.from("content_folders").insert({
-    name: newFolderName.trim(),
-    user_id: user.id,
-  });
-
-  setNewFolderName("");
-  loadFolders();
-}
-
-// UPLOAD CONTENUTO (con user_id)
-async function handleUpload(e) {
-  e.preventDefault();
-  if (!file || !currentFolderId) return;
-
-  setUploading(true);
-
-  try {
-    const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
-    const path = `${Date.now()}-${file.name}`;
-    const contentType = file.type || "application/octet-stream";
-
-    const { data: storageData } = await supabase.storage
-      .from("contents")
-      .upload(path, file, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType,
-      });
-
+  // LOAD FOLDERS
+  async function loadFolders() {
     const {
-      data: { publicUrl },
-    } = supabase.storage.from("contents").getPublicUrl(storageData.path);
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    let type = "altro";
-    if (contentType.startsWith("image/")) type = "immagine";
-    else if (contentType.startsWith("video/")) type = "video";
-    else if (contentType === "application/pdf") type = "documento";
-    else if (ext === "html") type = "html";
+    const { data } = await supabase
+      .from("content_folders")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("name", { ascending: true });
+
+    setFolders(data || []);
+  }
+
+  // LOAD CONTENTS
+  async function loadContents() {
+    setLoading(true);
+
+    if (!currentFolderId) {
+      setContents([]);
+      setLoading(false);
+      return;
+    }
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    await supabase.from("contents").insert({
-      name: file.name,
-      type,
-      url: publicUrl,
-      size_bytes: file.size,
-      folder: currentFolderId,
+    const { data } = await supabase
+      .from("contents")
+      .select("*")
+      .eq("folder", currentFolderId)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    setContents(data || []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    loadFolders();
+  }, []);
+
+  useEffect(() => {
+    loadContents();
+  }, [currentFolderId]);
+
+  function openFolder(folderId) {
+    setCurrentFolderId(folderId);
+  }
+
+  function goRoot() {
+    setCurrentFolderId(null);
+  }
+
+  function handleFolderClick(folderId) {
+    const now = Date.now();
+    if (lastClickRef.current && now - lastClickRef.current < 300) {
+      openFolder(folderId);
+    }
+    lastClickRef.current = now;
+  }
+
+  // CREATE FOLDER
+  async function createFolder() {
+    if (!newFolderName.trim()) return;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    await supabase.from("content_folders").insert({
+      name: newFolderName.trim(),
       user_id: user.id,
     });
 
-    setFile(null);
-    loadContents();
-  } finally {
-    setUploading(false);
+    setNewFolderName("");
+    loadFolders();
   }
-}
 
-// ELIMINA CONTENUTO
-async function handleDelete(id, url) {
-  if (!confirm("Sei sicuro di voler eliminare questo contenuto?")) return;
+  // UPLOAD CONTENT
+  async function handleUpload(e) {
+    e.preventDefault();
+    if (!file || !currentFolderId) return;
 
-  try {
-    const parts = url.split("/contents/");
-    if (parts[1]) {
-      await supabase.storage.from("contents").remove([parts[1]]);
+    setUploading(true);
+
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+      const path = `${Date.now()}-${file.name}`;
+      const contentType = file.type || "application/octet-stream";
+
+      const { data: storageData } = await supabase.storage
+        .from("contents")
+        .upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType,
+        });
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("contents").getPublicUrl(storageData.path);
+
+      let type = "altro";
+      if (contentType.startsWith("image/")) type = "immagine";
+      else if (contentType.startsWith("video/")) type = "video";
+      else if (contentType === "application/pdf") type = "documento";
+      else if (ext === "html") type = "html";
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      await supabase.from("contents").insert({
+        name: file.name,
+        type,
+        url: publicUrl,
+        size_bytes: file.size,
+        folder: currentFolderId,
+        user_id: user.id,
+      });
+
+      setFile(null);
+      loadContents();
+    } finally {
+      setUploading(false);
     }
-  } catch {}
+  }
 
-  await supabase.from("contents").delete().eq("id", id);
-  setContents((prev) => prev.filter((c) => c.id !== id));
-}
+  // DELETE CONTENT
+  async function handleDelete(id, url) {
+    if (!confirm("Sei sicuro di voler eliminare questo contenuto?")) return;
 
-const showUpload = currentFolderId !== null;
+    try {
+      const parts = url.split("/contents/");
+      if (parts[1]) {
+        await supabase.storage.from("contents").remove([parts[1]]);
+      }
+    } catch {}
+
+    await supabase.from("contents").delete().eq("id", id);
+    setContents((prev) => prev.filter((c) => c.id !== id));
+  }
+
+  const showUpload = currentFolderId !== null;
 
   return (
-  <ProtectedRoute>
-    <div className="flex min-h-screen bg-slate-950 text-slate-50">
-      <Sidebar />
-      <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
+    <ProtectedRoute>
+      <div className="flex min-h-screen bg-[linear-gradient(135deg,rgba(255,255,255,0.97),rgba(245,248,255,0.95))] text-slate-900 backdrop-blur-2xl">
+        <Sidebar />
+        <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-      <div className="flex-1 flex flex-col">
-        <TopBar
-          title="Contenuti"
-          subtitle="File manager per i tuoi media"
-          onMenuClick={() => setMenuOpen(true)}
-        />
+        <div className="flex-1 flex flex-col">
+          <TopBar
+            title="Contenuti"
+            subtitle="File manager premium per i tuoi media"
+            onMenuClick={() => setMenuOpen(true)}
+          />
 
-        <main className="flex-1 px-6 md:px-8 py-6 space-y-6">
+          <main className="flex-1 px-6 md:px-10 py-8 space-y-10">
+            {/* HEADER */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="text-xl font-bold uppercase tracking-[0.2em] text-slate-500">
+                  File system
+                </div>
 
-          {/* HEADER */}
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">
-                File system
+                <div className="text-m text-slate-500 mt-1">
+                  {!currentFolderId
+                    ? `${folders.length} cartelle in Root`
+                    : `${contents.length} elementi`}
+                </div>
+
+                {/* BREADCRUMB */}
+                <div className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-600">
+                  <button
+                    onClick={goRoot}
+                    className={`px-3 py-1.5 rounded-lg border text-sm font-semibold transition ${
+                      !currentFolderId
+                        ? "bg-white shadow-sm border-slate-300 text-slate-900"
+                        : "bg-slate-100 border-slate-300 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    Root
+                  </button>
+
+                  {currentFolder && (
+                    <>
+                      <span className="text-slate-400">›</span>
+                      <span className="px-3 py-1.5 rounded-lg bg-white shadow-sm border border-slate-300 text-slate-900">
+                        {currentFolder.name}
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
-
-              <div className="text-xs text-slate-500 mt-1">
-                {!currentFolderId
-                  ? `${folders.length} cartelle in Root`
-                  : `${contents.length} elementi`}
-              </div>
-
-              {/* BREADCRUMB */}
-              <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-2">
-                <button
-                  onClick={goRoot}
-                  className={`px-2 py-1 rounded hover:bg-slate-800 ${
-                    !currentFolderId ? "bg-slate-800 text-slate-100" : "text-slate-300"
-                  }`}
-                >
-                  Root
-                </button>
-
-                {currentFolder && (
-                  <>
-                    <span className="text-slate-600">›</span>
-                    <span className="px-2 py-1 rounded bg-slate-800 text-slate-100">
-                      {currentFolder.name}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <button
-              onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-              className="px-3 py-1.5 text-xs bg-slate-900 rounded-full border border-slate-700 hover:border-slate-400 hover:bg-slate-800 transition"
-            >
-              {viewMode === "grid" ? "Vista lista" : "Vista griglia"}
-            </button>
-          </div>
-
-          {/* CARTELLE HEADER + CREA CARTELLA INLINE */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-xs text-slate-400">Cartelle</div>
-
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Nuova cartella…"
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                className="bg-slate-900 text-xs px-2 py-1 rounded-lg border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
 
               <button
-                onClick={createFolder}
-                disabled={!newFolderName.trim()}
-                className="px-2 py-1 text-xs bg-indigo-500 hover:bg-indigo-400 rounded-lg text-white disabled:bg-slate-700 disabled:text-slate-400"
+                onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+                className="px-4 py-2 text-m font-semibold bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-100 transition"
               >
-                +
+                {viewMode === "grid" ? "Vista lista" : "Vista griglia"}
               </button>
             </div>
-          </div>
 
-          {/* CARTELLE (solo in Root) */}
-          {!currentFolderId && (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-              {folders.map((f) => (
-                <div
-                  key={f.id}
-                  onClick={() => handleFolderClick(f.id)}
-                  onDoubleClick={() => openFolder(f.id)}
-                  className="cursor-pointer flex flex-col items-center p-3 rounded-xl hover:bg-slate-900/60 transition select-none group"
-                >
-                  <div className="w-14 h-10 sm:w-16 sm:h-12 bg-gradient-to-b from-blue-400 to-blue-500 rounded-lg shadow-md border border-blue-300 group-hover:scale-105 transition-transform" />
-                  <div className="text-[12px] sm:text-xs text-slate-200 truncate w-full text-center mt-2">
-                    {f.name}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* UPLOAD (solo dentro una cartella) */}
-          {showUpload && (
-            <form
-              onSubmit={handleUpload}
-              className="rounded-xl border border-dashed border-slate-700 bg-slate-900/60 px-4 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-            >
-              <div>
-                <div className="text-sm font-medium">Carica nuovo contenuto</div>
-                <div className="text-xs text-slate-500 mt-1">
-                  Verrà salvato in:{" "}
-                  <span className="text-slate-200 font-semibold">
-                    {currentFolder?.name}
-                  </span>
-                </div>
+            {/* CREATE FOLDER */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm font-semibold text-slate-600">
+                Cartelle
               </div>
 
-              <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+              <div className="flex textitems-center gap-2">
                 <input
-                  type="file"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="text-xs text-slate-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-medium file:bg-slate-800 file:text-slate-100 hover:file:bg-slate-700"
+                  type="text"
+                  placeholder="Nuova cartella…"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  className="bg-white text-m px-3 py-2 rounded-lg border border-slate-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
                 />
+
                 <button
-                  type="submit"
-                  disabled={!file || uploading}
-                  className="px-3 py-1.5 rounded-xl text-xs font-medium bg-indigo-500 hover:bg-indigo-400 disabled:bg-slate-700 disabled:text-slate-400 text-white shadow-lg shadow-indigo-500/40"
+                  onClick={createFolder}
+                  disabled={!newFolderName.trim()}
+                  className="px-4 py-2 text-m font-bold bg-indigo-500 hover:bg-indigo-600 rounded-lg text-white shadow-md disabled:bg-slate-300 disabled:text-slate-500"
                 >
-                  {uploading ? "Caricamento..." : "Carica"}
+                  +
                 </button>
               </div>
-            </form>
-          )}
+            </div>
 
-          {/* CONTENUTI (solo dentro una cartella) */}
-          {currentFolderId && (
-            <>
-              {loading ? (
-                <div className="text-sm text-slate-500">Caricamento contenuti...</div>
-              ) : contents.length === 0 ? (
-                <div className="mt-10 text-center text-sm text-slate-500 flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-slate-500 text-xl">
-                    📁
-                  </div>
-                  Nessun contenuto in questa cartella.
-                </div>
-              ) : viewMode === "grid" ? (
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                  {contents.map((c) => (
+            {/* FOLDERS */}
+            {!currentFolderId && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6">
+                {folders.map((f) => (
+                  <div
+                    key={f.id}
+                    onClick={() => handleFolderClick(f.id)}
+                    onDoubleClick={() => openFolder(f.id)}
+                    className="
+                      cursor-pointer flex flex-col items-center p-5 rounded-2xl
+                      bg-white border border-slate-200 shadow-sm
+                      hover:shadow-lg hover:shadow-slate-200/60 hover:bg-slate-50
+                      transition-all select-none group
+                    "
+                  >
                     <div
-                      key={c.id}
-                      className="rounded-xl border border-slate-800 bg-slate-900/50 overflow-hidden flex flex-col hover:bg-slate-900/70 transition"
-                    >
-                      {c.type === "immagine" ? (
-                        <div className="h-40 bg-slate-900 border-b border-slate-800 overflow-hidden flex items-center justify-center">
-                          <img
-                            src={c.url}
-                            alt={c.name}
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <div className="h-40 bg-slate-900 border-b border-slate-800 flex items-center justify-center text-[12px] text-slate-500">
-                          Anteprima non disponibile ({c.type})
-                        </div>
-                      )}
+                      className="
+                        w-16 h-12 rounded-lg
+                        bg-gradient-to-b from-indigo-200 to-indigo-300
+                        border border-indigo-100 shadow-sm
+                        group-hover:scale-105 transition-transform
+                      "
+                    />
+                    <div className="text-base font-semibold text-slate-900 truncate w-full text-center mt-3">
+                      {f.name}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-                      <div className="p-3 flex-1 flex flex-col">
-                        <div className="text-xs font-medium truncate" title={c.name}>
-                          {c.name}
+            {/* UPLOAD */}
+            {showUpload && (
+              <form
+                onSubmit={handleUpload}
+                className="
+                  rounded-2xl border border-dashed border-slate-300 bg-white/80
+                  px-6 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4
+                  shadow-sm hover:shadow-md transition
+                "
+              >
+                <div>
+                  <div className="text-lg font-bold text-slate-900">
+                    Carica nuovo contenuto
+                  </div>
+                  <div className="text-sm text-slate-500 mt-1">
+                    Verrà salvato in:{" "}
+                    <span className="text-slate-900 font-semibold">
+                      {currentFolder?.name}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
+                  <input
+                    type="file"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    className="
+                      text-sm text-slate-700
+                      file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border file:border-slate-300
+                      file:text-sm file:font-semibold file:bg-white file:text-slate-800
+                      hover:file:bg-slate-100
+                    "
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={!file || uploading}
+                    className="
+                      px-4 py-2 rounded-xl text-sm font-semibold
+                      bg-indigo-500 text-white
+                      hover:bg-indigo-600
+                      disabled:bg-slate-300 disabled:text-slate-500
+                      shadow-md shadow-indigo-200/50
+                      transition
+                    "
+                  >
+                    {uploading ? "Caricamento..." : "Carica"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* CONTENTS */}
+            {currentFolderId && (
+              <>
+                {loading ? (
+                  <div className="text-sm text-slate-500">
+                    Caricamento contenuti...
+                  </div>
+                ) : contents.length === 0 ? (
+                  <div className="mt-10 text-center text-sm text-slate-500 flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center text-slate-500 text-xl">
+                      📁
+                    </div>
+                    Nessun contenuto in questa cartella.
+                  </div>
+                ) : viewMode === "grid" ? (
+                  <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                    {contents.map((c) => (
+                      <div
+                        key={c.id}
+                        className="
+                          rounded-2xl border border-slate-200 bg-white/90
+                          overflow-hidden flex flex-col
+                          hover:bg-white hover:shadow-xl hover:shadow-slate-200/70
+                          transition-all
+                        "
+                      >
+                        {c.type === "immagine" ? (
+                          <div className="h-48 bg-white border-b border-slate-200 overflow-hidden flex items-center justify-center">
+                            <img
+                              src={c.url}
+                              alt={c.name}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-48 bg-slate-100 border-b border-slate-200 flex items_center justify-center text-sm text-slate-500">
+                            Anteprima non disponibile ({c.type})
+                          </div>
+                        )}
+
+                        <div className="p-5 flex-1 flex flex-col">
+                          <div
+                            className="text-base font-semibold text-slate-900 truncate"
+                            title={c.name}
+                          >
+                            {c.name}
+                          </div>
+
+                          <div className="text-sm text-slate-500 mt-1">
+                            {c.type} • {formatBytes(c.size_bytes)}
+                          </div>
+
+                          <div className="mt-auto pt-4 flex items-center justify-between gap-2">
+                            <a
+                              href={c.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-sm text-indigo-600 hover:text-indigo-700 underline"
+                            >
+                              Apri
+                            </a>
+
+                            <button
+                              onClick={() => handleDelete(c.id, c.url)}
+                              className="text-sm text-red-600 hover:text-red-700"
+                            >
+                              Elimina
+                            </button>
+                          </div>
                         </div>
-                        <div className="text-[11px] text-slate-500 mt-1">
-                          {c.type} • {formatBytes(c.size_bytes)}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {contents.map((c) => (
+                      <div
+                        key={c.id}
+                        className="
+                          flex items-center justify_between
+                          bg_white/80 border border-slate-200 rounded-xl
+                          px-4 py-3
+                          hover:bg-white hover:shadow-md hover:shadow-slate-200/60
+                          transition
+                        "
+                      >
+                        <div className="flex items-center gap-4 min-w-0">
+                          <div className="w-10 h-10 bg-slate-100 border border-slate-200 rounded-lg flex items-center justify-center text-xs text-slate-500">
+                            {c.type === "immagine"
+                              ? "IMG"
+                              : c.type === "video"
+                              ? "VID"
+                              : c.type === "documento"
+                              ? "PDF"
+                              : "FILE"}
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold text-slate-900 truncate max-w-[180px] sm:max-w-[260px]">
+                              {c.name}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {formatBytes(c.size_bytes)}
+                            </div>
+                          </div>
                         </div>
-                        <div className="mt-auto pt-3 flex items-center justify-between gap-2">
+
+                        <div className="flex items-center gap-4">
                           <a
                             href={c.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[11px] text-indigo-300 hover:text-indigo-200 underline"
+                            className="text-sm text-indigo-600 hover:text-indigo-700 underline"
                           >
                             Apri
                           </a>
+
                           <button
                             onClick={() => handleDelete(c.id, c.url)}
-                            className="text-[11px] text-red-400 hover:text-red-300"
+                            className="text-sm text-red-600 hover:text-red-700"
                           >
                             Elimina
                           </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {contents.map((c) => (
-                    <div
-                      key={c.id}
-                      className="flex items-center justify-between bg-slate-900/40 border border-slate-800 rounded-xl px-4 py-3 hover:bg-slate-900/60 transition"
-                    >
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-[12px] text-slate-400">
-                          {c.type === "immagine"
-                            ? "IMG"
-                            : c.type === "video"
-                            ? "VID"
-                            : c.type === "documento"
-                            ? "PDF"
-                            : "FILE"}
-                        </div>
-
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate max-w-[180px] sm:max-w-[260px]">
-                            {c.name}
-                          </div>
-                          <div className="text-[11px] text-slate-500">
-                            {formatBytes(c.size_bytes)}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        <a
-                          href={c.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[12px] text-indigo-300 hover:text-indigo-200 underline"
-                        >
-                          Apri
-                        </a>
-                        <button
-                          onClick={() => handleDelete(c.id, c.url)}
-                          className="text-[12px] text-red-400 hover:text-red-300"
-                        >
-                          Elimina
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </main>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </main>
+        </div>
       </div>
-    </div>
-	</ProtectedRoute>
+    </ProtectedRoute>
   );
 }

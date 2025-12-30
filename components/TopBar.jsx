@@ -12,7 +12,7 @@ export function TopBar({ title, subtitle, onMenuClick }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Carica utente + listener per aggiornamenti
+  // Carica utente + listener
   useEffect(() => {
     let mounted = true;
 
@@ -51,11 +51,11 @@ export function TopBar({ title, subtitle, onMenuClick }) {
     router.replace("/login");
   }
 
-  // Avatar
+  // Avatar premium
   const Avatar = () => {
     if (user === undefined) {
       return (
-        <div className="w-8 h-8 rounded-full bg-slate-700 animate-pulse" />
+        <div className="w-9 h-9 rounded-full bg-slate-200 animate-pulse" />
       );
     }
 
@@ -65,58 +65,94 @@ export function TopBar({ title, subtitle, onMenuClick }) {
       "?";
 
     return (
-      <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold">
+      <div className="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shadow-sm">
         {letter}
       </div>
     );
   };
 
   return (
-    <header className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-slate-800 bg-slate-950">
-      {/* Left */}
-      <div className="flex items-center gap-3">
+    <header
+      className="
+        flex items-center justify-between
+        px-4 md:px-8 py-4
+        bg-[linear-gradient(135deg,rgba(255,255,255,0.97),rgba(245,248,255,0.95))]
+        backdrop-blur-xl
+        border-b border-slate-200
+        shadow-sm
+      "
+    >
+      {/* LEFT */}
+      <div className="flex items-center gap-4">
+        {/* Mobile menu button */}
         <button
           onClick={onMenuClick}
-          className="md:hidden p-2 rounded-lg bg-slate-900 border border-slate-700"
+          className="
+            md:hidden p-2 rounded-xl
+            bg-white border border-slate-300
+            shadow-sm hover:bg-slate-100 transition
+          "
         >
           ☰
         </button>
 
         <div>
-          <h1 className="text-base md:text-lg font-semibold">{title}</h1>
-          <p className="text-[10px] md:text-xs text-slate-500">{subtitle}</p>
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
+            {title}
+          </h1>
+          <p className="text-sm text-slate-500 font-medium">
+            {subtitle}
+          </p>
         </div>
       </div>
 
-      {/* Right */}
+      {/* RIGHT */}
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 px-2 md:px-3 py-2 rounded-lg hover:bg-slate-900 transition"
+          className="
+            flex items-center gap-3 px-3 py-2
+            rounded-xl bg-white border border-slate-300
+            shadow-sm hover:bg-slate-100 transition
+          "
         >
           <Avatar />
 
           {/* Nome utente */}
-          <span className="hidden sm:block text-sm text-slate-300">
+          <span className="hidden sm:block text-sm font-semibold text-slate-700">
             {user === undefined
               ? ""
               : user?.user_metadata?.name || user?.email || ""}
           </span>
         </button>
 
-        {/* Dropdown */}
+        {/* DROPDOWN PREMIUM */}
         {open && user && (
-          <div className="absolute right-0 mt-2 w-44 md:w-48 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-2 z-50">
-            <div className="px-3 py-2">
-              <div className="text-sm font-semibold text-slate-100">
+          <div
+            className="
+              absolute right-0 mt-3 w-52
+              bg-white border border-slate-200
+              rounded-xl shadow-xl
+              backdrop-blur-xl
+              p-3 z-50
+            "
+          >
+            <div className="px-2 py-2 border-b border-slate-200">
+              <div className="text-sm font-bold text-slate-900">
                 {user?.user_metadata?.name || user?.email}
               </div>
-              <div className="text-xs text-slate-400">{user?.email}</div>
+              <div className="text-xs text-slate-500">
+                {user?.email}
+              </div>
             </div>
 
             <button
               onClick={handleLogout}
-              className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-slate-800 rounded-md"
+              className="
+                w-full text-left px-3 py-2 mt-2
+                text-sm font-semibold text-red-600
+                rounded-lg hover:bg-red-50 transition
+              "
             >
               Logout
             </button>
