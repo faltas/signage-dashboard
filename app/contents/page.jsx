@@ -38,128 +38,153 @@ export default function ContentsPage() {
     ? folders.find((f) => f.id === currentFolderId) || null
     : null;
 
-  async function loadFolders() {
-    const { data } = await supabase
-      .from("content_folders")
-      .select("*")
-      .order("name", { ascending: true });
+// Carica cartelle dell’utente
+async function loadFolders() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    setFolders(data || []);
-  }
+  const { data } = await supabase
+    .from("content_folders")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("name", { ascending: true });
 
-  async function loadContents() {
-    setLoading(true);
+  setFolders(data || []);
+}
 
-    if (!currentFolderId) {
-      setContents([]);
-      setLoading(false);
-      return;
-    }
+// Carica contenuti della cartella corrente
+async function loadContents() {
+  setLoading(true);
 
-    const { data } = await supabase
-      .from("contents")
-      .select("*")
-      .eq("folder", currentFolderId)
-      .order("created_at", { ascending: false });
-
-    setContents(data || []);
+  if (!currentFolderId) {
+    setContents([]);
     setLoading(false);
+    return;
   }
 
-  useEffect(() => {
-    loadFolders();
-  }, []);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    loadContents();
-  }, [currentFolderId]);
+  const { data } = await supabase
+    .from("contents")
+    .select("*")
+    .eq("folder", currentFolderId)
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
 
-  function openFolder(folderId) {
-    setCurrentFolderId(folderId);
+  setContents(data || []);
+  setLoading(false);
+}
+
+useEffect(() => {
+  loadFolders();
+}, []);
+
+useEffect(() => {
+  loadContents();
+}, [currentFolderId]);
+
+function openFolder(folderId) {
+  setCurrentFolderId(folderId);
+}
+
+function goRoot() {
+  setCurrentFolderId(null);
+}
+
+function handleFolderClick(folderId) {
+  const now = Date.now();
+  if (lastClickRef.current && now - lastClickRef.current < 300) {
+    openFolder(folderId);
   }
+  lastClickRef.current = now;
+}
 
-  function goRoot() {
-    setCurrentFolderId(null);
-  }
+// CREA CARTELLA (con user_id)
+async function createFolder() {
+  if (!newFolderName.trim()) return;
 
-  function handleFolderClick(folderId) {
-    const now = Date.now();
-    if (lastClickRef.current && now - lastClickRef.current < 300) {
-      openFolder(folderId);
-    }
-    lastClickRef.current = now;
-  }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  async function createFolder() {
-    if (!newFolderName.trim()) return;
+  await supabase.from("content_folders").insert({
+    name: newFolderName.trim(),
+    user_id: user.id,
+  });
 
-    await supabase.from("content_folders").insert({
-      name: newFolderName.trim(),
-    });
+  setNewFolderName("");
+  loadFolders();
+}
 
-    setNewFolderName("");
-    loadFolders();
-  }
+// UPLOAD CONTENUTO (con user_id)
+async function handleUpload(e) {
+  e.preventDefault();
+  if (!file || !currentFolderId) return;
 
-  async function handleUpload(e) {
-    e.preventDefault();
-    if (!file || !currentFolderId) return;
+  setUploading(true);
 
-    setUploading(true);
+  try {
+    const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+    const path = `${Date.now()}-${file.name}`;
+    const contentType = file.type || "application/octet-stream";
 
-    try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
-      const path = `${Date.now()}-${file.name}`;
-      const contentType = file.type || "application/octet-stream";
-
-      const { data: storageData } = await supabase.storage
-        .from("contents")
-        .upload(path, file, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType,
-        });
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("contents").getPublicUrl(storageData.path);
-
-      let type = "altro";
-      if (contentType.startsWith("image/")) type = "immagine";
-      else if (contentType.startsWith("video/")) type = "video";
-      else if (contentType === "application/pdf") type = "documento";
-      else if (ext === "html") type = "html";
-
-      await supabase.from("contents").insert({
-        name: file.name,
-        type,
-        url: publicUrl,
-        size_bytes: file.size,
-        folder: currentFolderId,
+    const { data: storageData } = await supabase.storage
+      .from("contents")
+      .upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType,
       });
 
-      setFile(null);
-      loadContents();
-    } finally {
-      setUploading(false);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("contents").getPublicUrl(storageData.path);
+
+    let type = "altro";
+    if (contentType.startsWith("image/")) type = "immagine";
+    else if (contentType.startsWith("video/")) type = "video";
+    else if (contentType === "application/pdf") type = "documento";
+    else if (ext === "html") type = "html";
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    await supabase.from("contents").insert({
+      name: file.name,
+      type,
+      url: publicUrl,
+      size_bytes: file.size,
+      folder: currentFolderId,
+      user_id: user.id,
+    });
+
+    setFile(null);
+    loadContents();
+  } finally {
+    setUploading(false);
+  }
+}
+
+// ELIMINA CONTENUTO
+async function handleDelete(id, url) {
+  if (!confirm("Sei sicuro di voler eliminare questo contenuto?")) return;
+
+  try {
+    const parts = url.split("/contents/");
+    if (parts[1]) {
+      await supabase.storage.from("contents").remove([parts[1]]);
     }
-  }
+  } catch {}
 
-  async function handleDelete(id, url) {
-    if (!confirm("Sei sicuro di voler eliminare questo contenuto?")) return;
+  await supabase.from("contents").delete().eq("id", id);
+  setContents((prev) => prev.filter((c) => c.id !== id));
+}
 
-    try {
-      const parts = url.split("/contents/");
-      if (parts[1]) {
-        await supabase.storage.from("contents").remove([parts[1]]);
-      }
-    } catch {}
-
-    await supabase.from("contents").delete().eq("id", id);
-    setContents((prev) => prev.filter((c) => c.id !== id));
-  }
-
-  const showUpload = currentFolderId !== null;
+const showUpload = currentFolderId !== null;
 
   return (
   <ProtectedRoute>
