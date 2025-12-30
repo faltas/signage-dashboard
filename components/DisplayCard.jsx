@@ -1,10 +1,10 @@
 "use client";
 
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/app/providers";
 
 export function DisplayCard({ display }) {
   async function sendCommand(type, payload = {}) {
-    const { error } = await supabase
+    const { error } = await useSupabase
       .from("commands")
       .insert({
         display_id: display.id,

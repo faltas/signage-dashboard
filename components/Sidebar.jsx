@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/app/providers";
 
 const menuItems = [
   { href: "/displays", label: "Display" },
@@ -16,7 +16,7 @@ export function Sidebar() {
   const router = useRouter();
 
   async function handleLogout() {
-    await supabase.auth.signOut();
+    await useSupabase.auth.signOut();
     router.replace("/login");
   }
 

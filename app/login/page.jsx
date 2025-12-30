@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/app/providers";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaMicrosoft } from "react-icons/fa";
 
 export default function LoginPage() {
   const router = useRouter();
-
+  const supabase = useSupabase();
   // login | signup | reset
   const [mode, setMode] = useState("login");
 

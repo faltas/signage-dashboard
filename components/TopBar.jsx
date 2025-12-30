@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/app/providers";
 import { useRouter } from "next/navigation";
 
 export function TopBar({ title, subtitle, onMenuClick }) {
@@ -10,7 +10,8 @@ export function TopBar({ title, subtitle, onMenuClick }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Carica utente da Supabase
+  // Carica utente da supabase
+  const supabase = useSupabase();
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user || null);

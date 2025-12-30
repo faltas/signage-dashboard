@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/app/providers";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
@@ -11,7 +11,8 @@ export default function DisplaysPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [displays, setDisplays] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const supabase = useSupabase();
+  
   async function loadDisplays() {
     setLoading(true);
 
@@ -25,6 +26,7 @@ export default function DisplaysPage() {
         playlist_id,
         playlists:playlist_id ( name )
       `)
+	  .not("user_id", "is", null)
       .order("name", { ascending: true });
 
     if (error) {

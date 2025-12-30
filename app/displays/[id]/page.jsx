@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/app/providers";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
@@ -19,11 +19,13 @@ export default function DisplayDetailPage() {
   const [logs, setLogs] = useState([]);
   const [screenshots, setScreenshots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const supabase = useSupabase();
 
-  function isOnline(lastSeen) {
-    if (!lastSeen) return false;
-    const diff = (Date.now() - new Date(lastSeen).getTime()) / 1000;
-    return diff < 20;
+  function isOnline(status) {
+    if (status === "on") return "bg-green-500";
+    if (status === "off") return "bg-red-500";
+    if (status === "mgmt") return "bg-orange-500";
+    return "bg-gray-500";
   }
 
   async function loadData() {
@@ -132,12 +134,12 @@ export default function DisplayDetailPage() {
 
                   <div
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                      isOnline(display.last_seen_at)
+                      isOnline(display.status)
                         ? "bg-green-600/20 text-green-400 border border-green-700"
                         : "bg-red-600/20 text-red-400 border border-red-700"
                     }`}
                   >
-                    {isOnline(display.last_seen_at) ? "Online" : "Offline"}
+                    {display.status == "on" ? "Online" : "Offline"}
                   </div>
                 </div>
               </section>

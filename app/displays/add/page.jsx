@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/app/providers";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
@@ -10,12 +10,12 @@ import Webcam from "react-webcam";
 import jsQR from "jsqr";
 
 export default function AddDisplayPage() {
+  const supabase = useSupabase();
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [pairingCode, setPairingCode] = useState("");
   const [scanning, setScanning] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -52,11 +52,6 @@ export default function AddDisplayPage() {
         if (qr && qr.data) {
           let code = qr.data.trim().toUpperCase();
 
-          // Formati accettati:
-          // signage://pair/AB12
-          // https://domain.com/pair/AB12
-          // AB12
-
           if (code.startsWith("SIGNAGE://PAIR/")) {
             code = code.replace("SIGNAGE://PAIR/", "");
           }
@@ -79,30 +74,70 @@ export default function AddDisplayPage() {
   // -----------------------------
   // SUBMIT
   // -----------------------------
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setLoading(true);
+async function handleSubmit(e) {
+  e.preventDefault();
+  setError("");
+  setSuccess("");
+  setLoading(true);
+console.log("SUPABASE CLIENT:", supabase);
+console.log("SUPABASE CLIENT AUTH:", supabase.auth);
 
-    const { data: { user } } = await supabase.auth.getUser();
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const user = userData?.user;
+
+    console.log("USER:", user);
+    console.log("SESSION:", await supabase.auth.getSession());
+
+    if (userError) {
+      console.error("getUser error:", userError);
+      setError("Errore nel recupero utente.");
+      return;
+    }
+
+    if (!user) {
+      setError("Utente non autenticato.");
+      return;
+    }
+
+    const normalizedCode = pairingCode.trim().toUpperCase();
+    console.log("PAIRING CODE USATO:", normalizedCode);
+    const check = await supabase
+      .from("displays")
+      .select("id, pairing_code, user_id")
+    
+    console.log("CHECK BEFORE UPDATE:", check);
 
     const { data, error } = await supabase
       .from("displays")
-      .update({ user_id: user.id })
-      .eq("pairing_code", pairingCode.toUpperCase())
+      .update({ user_id: user.id,
+				status: "on"})
+      .eq("pairing_code", normalizedCode)
+      .is("user_id", null)
       .select();
 
-    setLoading(false);
+    console.log("UPDATE RESULT data:", data);
+    console.log("UPDATE RESULT error:", error);
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      setError("Errore durante l'associazione del display.");
+      return;
+    }
+
+    if (!data || data.length === 0) {
       setError("Codice non valido o display già associato.");
       return;
     }
 
     setSuccess("Display associato con successo!");
     setTimeout(() => router.push("/displays"), 1200);
+  } catch (err) {
+    console.error("Errore inatteso handleSubmit:", err);
+    setError("Errore inatteso durante l'associazione.");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-50">

@@ -5,10 +5,11 @@ import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/app/providers";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const supabase = useSupabase();
 
   const [menuOpen, setMenuOpen] = useState(false);
 

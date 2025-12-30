@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabase } from "@/app/providers";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
@@ -13,36 +13,38 @@ export default function PlaylistDetailPage() {
   const { id } = useParams();
   if (!id) return null;
 
-  // 🔽 Stato locale della pagina
+  const supabase = useSupabase();
+
+  // Layout
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Dati playlist
   const [playlist, setPlaylist] = useState(null);
   const [items, setItems] = useState([]);
-  const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal picker
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // 📡 Caricamento dati playlist
+  // Stato navigazione picker
+  const [pickerFolderId, setPickerFolderId] = useState(null); // null = Root
+  const [pickerFolders, setPickerFolders] = useState([]); // cartelle del livello corrente
+  const [pickerContents, setPickerContents] = useState([]); // contenuti della cartella corrente
+  const [pickerPath, setPickerPath] = useState([]); // [{id, name}]
+  const [pickerSearch, setPickerSearch] = useState("");
+  const [pickerSort, setPickerSort] = useState("name-asc");
+  const [pickerLoading, setPickerLoading] = useState(false);
+
   async function loadData() {
     setLoading(true);
 
-    // 1) playlist
     const { data: pl } = await supabase
       .from("playlists")
       .select("*")
       .eq("id", id)
       .single();
-
     setPlaylist(pl);
 
-    // 2) contenuti disponibili
-    const { data: cts } = await supabase
-      .from("contents")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    setContents(cts || []);
-
-    // 3) items playlist
     const { data: it } = await supabase
       .from("playlist_items")
       .select("*, contents(*)")
@@ -50,7 +52,6 @@ export default function PlaylistDetailPage() {
       .order("position", { ascending: true });
 
     setItems(it || []);
-
     setLoading(false);
   }
 
@@ -58,6 +59,104 @@ export default function PlaylistDetailPage() {
     if (!id) return;
     loadData();
   }, [id]);
+
+  // -------- Picker: caricamento dati per cartella corrente --------
+  async function loadPickerData(folderId, search, sortKey) {
+    setPickerLoading(true);
+
+    let foldersQuery = supabase
+      .from("content_folders")
+      .select("*")
+      .order("name", { ascending: true });
+
+    if (folderId) {
+      foldersQuery = foldersQuery.eq("parent_id", folderId);
+    } else {
+      foldersQuery = foldersQuery.is("parent_id", null);
+    }
+
+    const { data: f } = await foldersQuery;
+
+    let c = [];
+    if (folderId) {
+      const { data: contentsData } = await supabase
+        .from("contents")
+        .select("*")
+        .eq("folder", folderId)
+        .order("created_at", { ascending: false });
+      c = contentsData || [];
+    }
+
+    let filteredFolders = f || [];
+    let filteredContents = c || [];
+
+    if (search && search.trim()) {
+      const s = search.toLowerCase();
+      filteredFolders = filteredFolders.filter((folder) =>
+        (folder.name || "").toLowerCase().includes(s)
+      );
+      filteredContents = filteredContents.filter((content) =>
+        (content.name || "").toLowerCase().includes(s)
+      );
+    }
+
+    function sortArrays(arr, key, asc = true) {
+      return [...arr].sort((a, b) => {
+        const va = (a[key] || "").toString().toLowerCase();
+        const vb = (b[key] || "").toString().toLowerCase();
+        if (va < vb) return asc ? -1 : 1;
+        if (va > vb) return asc ? 1 : -1;
+        return 0;
+      });
+    }
+
+    if (sortKey === "name-asc") {
+      filteredFolders = sortArrays(filteredFolders, "name", true);
+      filteredContents = sortArrays(filteredContents, "name", true);
+    } else if (sortKey === "name-desc") {
+      filteredFolders = sortArrays(filteredFolders, "name", false);
+      filteredContents = sortArrays(filteredContents, "name", false);
+    } else if (sortKey === "date-desc") {
+      filteredContents = [...filteredContents].sort((a, b) => {
+        const da = new Date(a.created_at || 0).getTime();
+        const db = new Date(b.created_at || 0).getTime();
+        return db - da;
+      });
+    } else if (sortKey === "type-asc") {
+      filteredContents = sortArrays(filteredContents, "type", true);
+    }
+
+    setPickerFolders(filteredFolders);
+    setPickerContents(filteredContents);
+    setPickerLoading(false);
+  }
+
+  useEffect(() => {
+    if (!showAddModal) return;
+    loadPickerData(pickerFolderId, pickerSearch, pickerSort);
+  }, [showAddModal, pickerFolderId, pickerSearch, pickerSort]);
+
+  function openPickerRoot() {
+    setPickerFolderId(null);
+    setPickerPath([]);
+  }
+
+  function openPickerFolder(folder) {
+    setPickerFolderId(folder.id);
+    setPickerPath((prev) => [...prev, { id: folder.id, name: folder.name }]);
+  }
+
+  function goToPathIndex(index) {
+    if (index < 0) {
+      setPickerFolderId(null);
+      setPickerPath([]);
+      return;
+    }
+
+    const target = pickerPath[index];
+    setPickerFolderId(target.id);
+    setPickerPath(pickerPath.slice(0, index + 1));
+  }
 
   async function addContentToPlaylist(contentId) {
     const newPosition = items.length;
@@ -70,6 +169,9 @@ export default function PlaylistDetailPage() {
     });
 
     setShowAddModal(false);
+    setPickerFolderId(null);
+    setPickerPath([]);
+    setPickerSearch("");
     loadData();
   }
 
@@ -121,7 +223,7 @@ export default function PlaylistDetailPage() {
             <div className="text-sm text-slate-500">Caricamento...</div>
           ) : (
             <>
-              {/* Header */}
+              {/* HEADER */}
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">
@@ -133,21 +235,24 @@ export default function PlaylistDetailPage() {
                 </div>
 
                 <button
-                  onClick={() => setShowAddModal(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-500 hover:bg-indigo-400 text-white shadow-lg shadow-indigo-500/40"
+                  onClick={() => {
+                    setShowAddModal(true);
+                    openPickerRoot();
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-medium bg-indigo-500 hover:bg-indigo-400 text-white shadow-lg shadow-indigo-500/40 transition"
                 >
                   + Aggiungi contenuto
                 </button>
               </div>
 
-              {/* Drag & Drop */}
+              {/* DRAG & DROP LIST */}
               <DragDropContext onDragEnd={reorderItems}>
                 <Droppable droppableId="playlist">
                   {(provided) => (
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className="space-y-3"
+                      className="space-y-3 mt-4"
                     >
                       {items.map((item, index) => (
                         <Draggable
@@ -160,17 +265,24 @@ export default function PlaylistDetailPage() {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 transition-colors"
+                              className="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 transition shadow-sm"
                             >
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-lg bg-slate-800 overflow-hidden flex items-center justify-center">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-lg bg-slate-800 overflow-hidden flex items-center justify-center shadow-inner">
                                   {item.contents.type === "immagine" ? (
                                     <img
                                       src={item.contents.url}
                                       className="max-w-full max-h-full object-cover"
                                     />
+                                  ) : item.contents.type === "video" ? (
+                                    <video
+                                      src={item.contents.url}
+                                      className="max-w-full max-h-full object-cover"
+                                      muted
+                                      loop
+                                    />
                                   ) : (
-                                    <span className="text-[10px] text-slate-500">
+                                    <span className="text-[11px] text-slate-500 uppercase">
                                       {item.contents.type}
                                     </span>
                                   )}
@@ -188,7 +300,7 @@ export default function PlaylistDetailPage() {
 
                               <button
                                 onClick={() => removeItem(item.id)}
-                                className="text-[11px] text-red-400 hover:text-red-300"
+                                className="text-[11px] text-red-400 hover:text-red-300 transition"
                               >
                                 Elimina
                               </button>
@@ -207,47 +319,176 @@ export default function PlaylistDetailPage() {
         </main>
       </div>
 
-      {/* Modal aggiunta contenuto */}
+      {/* MODAL FILE PICKER */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="w-full max-w-lg bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">Aggiungi contenuto</div>
+          <div className="w-full max-w-3xl bg-slate-950 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl shadow-black/40">
+            {/* HEADER MODAL */}
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold">Aggiungi contenuto</div>
+                <div className="text-[11px] text-slate-500 mt-1">
+                  Seleziona una cartella e poi un contenuto da aggiungere alla playlist.
+                </div>
+              </div>
+
               <button
-                onClick={() => setShowAddModal(false)}
-                className="text-slate-500 hover:text-slate-200"
+                onClick={() => {
+                  setShowAddModal(false);
+                  openPickerRoot();
+                  setPickerSearch("");
+                }}
+                className="text-slate-500 hover:text-slate-200 text-lg"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
-              {contents.map((c) => (
+            {/* TOOLBAR: BREADCRUMB + SEARCH + SORT */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              {/* Breadcrumb */}
+              <div className="flex items-center flex-wrap gap-1 text-xs text-slate-400">
                 <button
-                  key={c.id}
-                  onClick={() => addContentToPlaylist(c.id)}
-                  className="w-full text-left px-3 py-2 rounded-lg border border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 transition-colors flex items-center gap-3"
+                  onClick={openPickerRoot}
+                  className={`px-2 py-1 rounded hover:bg-slate-800 ${
+                    !pickerFolderId && pickerPath.length === 0
+                      ? "bg-slate-800 text-slate-100"
+                      : "text-slate-300"
+                  }`}
                 >
-                  <div className="w-10 h-10 rounded-lg bg-slate-800 overflow-hidden flex items-center justify-center">
-                    {c.type === "immagine" ? (
-                      <img
-                        src={c.url}
-                        className="max-w-full max-h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-[10px] text-slate-500">
-                        {c.type}
-                      </span>
-                    )}
+                  Root
+                </button>
+
+                {pickerPath.map((segment, index) => (
+                  <div key={segment.id} className="flex items-center gap-1">
+                    <span className="text-slate-600">›</span>
+                    <button
+                      onClick={() => goToPathIndex(index)}
+                      className={`px-2 py-1 rounded hover:bg-slate-800 ${
+                        index === pickerPath.length - 1
+                          ? "bg-slate-800 text-slate-100"
+                          : "text-slate-300"
+                      }`}
+                    >
+                      {segment.name}
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Search + Sort */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={pickerSearch}
+                  onChange={(e) => setPickerSearch(e.target.value)}
+                  placeholder="Cerca per nome..."
+                  className="bg-slate-900 text-xs px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+                <select
+                  value={pickerSort}
+                  onChange={(e) => setPickerSort(e.target.value)}
+                  className="bg-slate-900 text-xs px-2 py-1.5 rounded-lg border border-slate-700"
+                >
+                  <option value="name-asc">Nome (A-Z)</option>
+                  <option value="name-desc">Nome (Z-A)</option>
+                  <option value="date-desc">Più recenti</option>
+                  <option value="type-asc">Tipo</option>
+                </select>
+              </div>
+            </div>
+
+            {/* CONTENUTO MODAL */}
+            {pickerLoading ? (
+              <div className="text-sm text-slate-500 mt-4">Caricamento...</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1.7fr)] gap-4 mt-3">
+                {/* COLONNA SINISTRA: CARTELLE */}
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">Cartelle</div>
+                  {pickerFolders.length === 0 ? (
+                    <div className="text-[12px] text-slate-600 italic">
+                      Nessuna cartella in questa posizione.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                      {pickerFolders.map((f) => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => openPickerFolder(f)}
+                          className="cursor-pointer flex flex-col items-center p-3 rounded-xl hover:bg-slate-900/60 transition select-none group"
+                        >
+                          <div className="w-14 h-10 bg-gradient-to-b from-blue-400 to-blue-500 rounded-lg shadow-md border border-blue-300 group-hover:scale-105 transition-transform" />
+                          <div className="text-[12px] text-slate-200 truncate w-full text-center mt-2">
+                            {f.name}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* COLONNA DESTRA: CONTENUTI DELLA CARTELLA CORRENTE */}
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">
+                    {pickerFolderId
+                      ? "Contenuti nella cartella selezionata"
+                      : "Seleziona una cartella per vedere i contenuti"}
                   </div>
 
-                  <div>
-                    <div className="text-sm font-medium">{c.name}</div>
-                    <div className="text-xs text-slate-500">{c.type}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
+                  {!pickerFolderId ? (
+                    <div className="text-[12px] text-slate-600 italic">
+                      Nessuna cartella selezionata.
+                    </div>
+                  ) : pickerContents.length === 0 ? (
+                    <div className="text-[12px] text-slate-600 italic">
+                      Nessun contenuto in questa cartella.
+                    </div>
+                  ) : (
+                    <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-2">
+                      {pickerContents.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => addContentToPlaylist(c.id)}
+                          className="w-full text-left px-3 py-2 rounded-xl border border-slate-800 bg-slate-900/40 hover:bg-slate-900/70 transition flex items-center gap-4"
+                        >
+                          <div className="w-12 h-12 rounded-lg bg-slate-800 overflow-hidden flex items-center justify-center shadow-inner">
+                            {c.type === "immagine" ? (
+                              <img
+                                src={c.url}
+                                className="max-w-full max-h-full object-cover"
+                              />
+                            ) : c.type === "video" ? (
+                              <video
+                                src={c.url}
+                                className="max-w-full max-h-full object-cover"
+                                muted
+                                loop
+                              />
+                            ) : (
+                              <span className="text-[11px] text-slate-500 uppercase">
+                                {c.type}
+                              </span>
+                            )}
+                          </div>
+
+                          <div>
+                            <div className="text-sm font-medium truncate max-w-[200px]">
+                              {c.name}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {c.type}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

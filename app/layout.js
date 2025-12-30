@@ -1,6 +1,5 @@
-
-
 import "./globals.css";
+import { SupabaseProvider } from "./providers";
 
 export const metadata = {
   title: "Signage Cloud Dashboard",
@@ -12,7 +11,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="it">
       <body className="bg-slate-950 text-slate-50">
-        {children}
+        <SupabaseProvider>
+          {children}
+        </SupabaseProvider>
       </body>
     </html>
   );
