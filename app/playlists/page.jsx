@@ -7,6 +7,8 @@ import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 
 export default function PlaylistsPage() {
   const router = useRouter();
@@ -54,6 +56,7 @@ export default function PlaylistsPage() {
   }
 
   return (
+  <ProtectedRoute>
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />
       <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -171,5 +174,6 @@ export default function PlaylistsPage() {
         </div>
       )}
     </div>
+	</ProtectedRoute>
   );
 }

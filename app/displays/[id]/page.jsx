@@ -6,6 +6,8 @@ import { useSupabase } from "@/app/providers";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 
 export default function DisplayDetailPage() {
   const { id } = useParams();
@@ -100,6 +102,7 @@ export default function DisplayDetailPage() {
   }
 
   return (
+  <ProtectedRoute>
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />
       <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -229,5 +232,6 @@ export default function DisplayDetailPage() {
         </main>
       </div>
     </div>
+</ProtectedRoute>
   );
 }

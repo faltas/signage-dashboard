@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import Link from "next/link";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function DisplaysPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -62,6 +63,7 @@ export default function DisplaysPage() {
   }
 
   return (
+  <ProtectedRoute>
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />
       <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -143,5 +145,6 @@ export default function DisplaysPage() {
         </main>
       </div>
     </div>
+</ProtectedRoute>
   );
 }

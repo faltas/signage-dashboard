@@ -6,6 +6,8 @@ import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
 import { useSupabase } from "@/app/providers";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -14,6 +16,7 @@ export default function SettingsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
+  <ProtectedRoute>
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />
       <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -36,5 +39,6 @@ export default function SettingsPage() {
         </main>
       </div>
     </div>
+	<ProtectedRoute>
   );
 }

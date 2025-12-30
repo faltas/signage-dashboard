@@ -7,6 +7,8 @@ import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 
 export default function PlaylistDetailPage() {
   const router = useRouter();
@@ -207,6 +209,7 @@ export default function PlaylistDetailPage() {
   }
 
   return (
+  <ProtectedRoute>
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />
       <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -493,5 +496,6 @@ export default function PlaylistDetailPage() {
         </div>
       )}
     </div>
+</ProtectedRoute>
   );
 }

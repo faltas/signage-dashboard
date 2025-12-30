@@ -8,6 +8,8 @@ import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import Webcam from "react-webcam";
 import jsQR from "jsqr";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 
 export default function AddDisplayPage() {
   const supabase = useSupabase();
@@ -140,6 +142,7 @@ console.log("SUPABASE CLIENT AUTH:", supabase.auth);
 }
 
   return (
+  <ProtectedRoute>
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />
       <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -221,5 +224,6 @@ console.log("SUPABASE CLIENT AUTH:", supabase.auth);
         </main>
       </div>
     </div>
+</ProtectedRoute>
   );
 }

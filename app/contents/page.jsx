@@ -6,6 +6,8 @@ import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import { useRouter } from "next/navigation";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 
 function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return "-";
@@ -160,6 +162,7 @@ export default function ContentsPage() {
   const showUpload = currentFolderId !== null;
 
   return (
+  <ProtectedRoute>
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />
       <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -404,5 +407,6 @@ export default function ContentsPage() {
         </main>
       </div>
     </div>
+	</ProtectedRoute>
   );
 }
