@@ -6,17 +6,34 @@ import { useRouter } from "next/navigation";
 
 export function TopBar({ title, subtitle, onMenuClick }) {
   const router = useRouter();
-  const [user, setUser] = useState(undefined); // <-- undefined = loading state
+  const supabase = useSupabase();
+
+  const [user, setUser] = useState(undefined); // undefined = loading
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Carica utente da supabase
-  const supabase = useSupabase();
+  // Carica utente + listener per aggiornamenti
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user || null);
-    });
-  }, []);
+    let mounted = true;
+
+    async function loadUser() {
+      const { data } = await supabase.auth.getUser();
+      if (mounted) setUser(data?.user || null);
+    }
+
+    loadUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (mounted) setUser(session?.user || null);
+      }
+    );
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   // Chiudi dropdown cliccando fuori
   useEffect(() => {
@@ -34,7 +51,7 @@ export function TopBar({ title, subtitle, onMenuClick }) {
     router.replace("/login");
   }
 
-  // Avatar placeholder shimmer
+  // Avatar
   const Avatar = () => {
     if (user === undefined) {
       return (
@@ -42,7 +59,10 @@ export function TopBar({ title, subtitle, onMenuClick }) {
       );
     }
 
-    const letter = user?.user_metadata?.name?.charAt(0)?.toUpperCase() || "U";
+    const letter =
+      user?.user_metadata?.name?.charAt(0)?.toUpperCase() ||
+      user?.email?.charAt(0)?.toUpperCase() ||
+      "?";
 
     return (
       <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold">
@@ -53,7 +73,7 @@ export function TopBar({ title, subtitle, onMenuClick }) {
 
   return (
     <header className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-slate-800 bg-slate-950">
-      {/* Left side */}
+      {/* Left */}
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuClick}
@@ -68,7 +88,7 @@ export function TopBar({ title, subtitle, onMenuClick }) {
         </div>
       </div>
 
-      {/* Right side: User Menu */}
+      {/* Right */}
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setOpen(!open)}
@@ -76,9 +96,11 @@ export function TopBar({ title, subtitle, onMenuClick }) {
         >
           <Avatar />
 
-          {/* Nome utente (nascosto su mobile per risparmiare spazio) */}
+          {/* Nome utente */}
           <span className="hidden sm:block text-sm text-slate-300">
-            {user?.user_metadata?.name || ""}
+            {user === undefined
+              ? ""
+              : user?.user_metadata?.name || user?.email || ""}
           </span>
         </button>
 
@@ -87,7 +109,7 @@ export function TopBar({ title, subtitle, onMenuClick }) {
           <div className="absolute right-0 mt-2 w-44 md:w-48 bg-slate-900 border border-slate-700 rounded-lg shadow-xl p-2 z-50">
             <div className="px-3 py-2">
               <div className="text-sm font-semibold text-slate-100">
-                {user?.user_metadata?.name}
+                {user?.user_metadata?.name || user?.email}
               </div>
               <div className="text-xs text-slate-400">{user?.email}</div>
             </div>
