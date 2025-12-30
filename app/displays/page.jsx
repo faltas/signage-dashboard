@@ -30,13 +30,7 @@ export default function DisplaysPage() {
       .not("user_id", "is", null)
       .order("name", { ascending: true });
 
-    if (error) {
-      console.error("Errore caricamento displays:", error);
-      setDisplays([]);
-    } else {
-      setDisplays(data || []);
-    }
-
+    setDisplays(error ? [] : data || []);
     setLoading(false);
   }
 
@@ -65,10 +59,14 @@ export default function DisplaysPage() {
   return (
     <ProtectedRoute>
       <div className="flex min-h-screen bg-[linear-gradient(135deg,rgba(255,255,255,0.97),rgba(245,248,255,0.95))] text-slate-900 backdrop-blur-2xl">
-        <Sidebar />
+
+        <div className="hidden md:block w-64 fixed top-0 left-0 h-screen">
+          <Sidebar />
+        </div>
+
         <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 md:pl-64 flex flex-col">
           <TopBar
             title="Display"
             subtitle="Gestisci i display connessi"
@@ -77,29 +75,27 @@ export default function DisplaysPage() {
 
           <main className="flex-1 px-6 md:px-10 py-8 space-y-10">
 
-            {/* HEADER */}
             <div className="flex items-center justify-between">
-              <div className="text-xl md:text-xm font-bold uppercase tracking-[0.2em] text-slate-500">
+              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
                 Tutti i display
               </div>
 
               <Link
                 href="/displays/add"
                 className="
-                  px-6 py-2 rounded-xl text-m font-semibold
+                  px-5 py-2 md:px-4 md:py-2 rounded-xl text-sm md:text-base font-semibold
                   bg-indigo-500 text-white shadow-md shadow-indigo-200/50
-                  hover:bg-indigo-600 transition justify-between
+                  hover:bg-indigo-600 transition
                 "
               >
                 + Aggiungi Display
               </Link>
             </div>
 
-            {/* LISTA DISPLAY */}
             {loading ? (
               <div className="text-sm text-slate-500">Caricamento...</div>
             ) : displays.length === 0 ? (
-              <div className="text-sm text-slate-500 mt-10 text-center">
+              <div className="text-sm md:text-xl text-slate-500 mt-10 text-center">
                 Nessun display registrato.
               </div>
             ) : (
@@ -110,16 +106,16 @@ export default function DisplaysPage() {
 
                 <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {displays.map((d) => (
-                    <div
+                    <Link
                       key={d.id}
+                      href={`/displays/${d.id}`}
                       className="
                         rounded-2xl border border-slate-200 bg-white/90
-                        p-6 flex flex-col gap-4
+                        p-6 flex flex-col gap-4 cursor-pointer
                         shadow-sm hover:shadow-xl hover:shadow-slate-200/70
-                        transition-all
+                        hover:bg-white transition-all
                       "
                     >
-                      {/* HEADER CARD */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <img
@@ -127,20 +123,19 @@ export default function DisplaysPage() {
                             className="w-8 h-8 opacity-90"
                             alt="display"
                           />
-                          <div className="text-lg font-bold text-slate-900">
+                          <div className="text-lg md:text-xl font-bold text-slate-900">
                             {d.name}
                           </div>
                         </div>
 
                         <div
-                          className={`w-3 h-3 rounded-full ${IsOnline(
+                          className={`w-3.5 h-3.5 rounded-full ${IsOnline(
                             d.status
                           )}`}
                         />
                       </div>
 
-                      {/* INFO */}
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm md:text-base text-slate-600">
                         <span className="font-semibold text-slate-700">
                           Playlist:
                         </span>{" "}
@@ -149,7 +144,7 @@ export default function DisplaysPage() {
                         )}
                       </div>
 
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm md:text-base text-slate-600">
                         <span className="font-semibold text-slate-700">
                           Ultimo contatto:
                         </span>{" "}
@@ -157,19 +152,7 @@ export default function DisplaysPage() {
                           ? new Date(d.last_seen_at).toLocaleString()
                           : "Mai"}
                       </div>
-
-                      {/* BUTTON */}
-                      <Link
-                        href={`/displays/${d.id}`}
-                        className="
-                          mt-3 px-4 py-2 rounded-xl text-sm font-semibold
-                          bg-white border border-slate-300 text-slate-700
-                          hover:bg-slate-100 shadow-sm transition text-center
-                        "
-                      >
-                        Dettagli
-                      </Link>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>

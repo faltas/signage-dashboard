@@ -36,7 +36,6 @@ export default function ContentsPage() {
     ? folders.find((f) => f.id === currentFolderId) || null
     : null;
 
-  // LOAD FOLDERS
   async function loadFolders() {
     const {
       data: { user },
@@ -51,7 +50,6 @@ export default function ContentsPage() {
     setFolders(data || []);
   }
 
-  // LOAD CONTENTS
   async function loadContents() {
     setLoading(true);
 
@@ -100,7 +98,6 @@ export default function ContentsPage() {
     lastClickRef.current = now;
   }
 
-  // CREATE FOLDER
   async function createFolder() {
     if (!newFolderName.trim()) return;
 
@@ -117,7 +114,6 @@ export default function ContentsPage() {
     loadFolders();
   }
 
-  // UPLOAD CONTENT
   async function handleUpload(e) {
     e.preventDefault();
     if (!file || !currentFolderId) return;
@@ -167,7 +163,6 @@ export default function ContentsPage() {
     }
   }
 
-  // DELETE CONTENT
   async function handleDelete(id, url) {
     if (!confirm("Sei sicuro di voler eliminare questo contenuto?")) return;
 
@@ -187,10 +182,14 @@ export default function ContentsPage() {
   return (
     <ProtectedRoute>
       <div className="flex min-h-screen bg-[linear-gradient(135deg,rgba(255,255,255,0.97),rgba(245,248,255,0.95))] text-slate-900 backdrop-blur-2xl">
-        <Sidebar />
+
+        <div className="hidden md:block w-64 fixed top-0 left-0 h-screen">
+          <Sidebar />
+        </div>
+
         <MobileSideBar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 md:pl-64 flex flex-col">
           <TopBar
             title="Contenuti"
             subtitle="File manager premium per i tuoi media"
@@ -198,20 +197,19 @@ export default function ContentsPage() {
           />
 
           <main className="flex-1 px-6 md:px-10 py-8 space-y-10">
-            {/* HEADER */}
+
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <div className="text-xl font-bold uppercase tracking-[0.2em] text-slate-500">
+                <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
                   File system
                 </div>
 
-                <div className="text-m text-slate-500 mt-1">
+                <div className="text-sm md:text-base text-slate-500 mt-1">
                   {!currentFolderId
                     ? `${folders.length} cartelle in Root`
                     : `${contents.length} elementi`}
                 </div>
 
-                {/* BREADCRUMB */}
                 <div className="mt-4 flex items-center gap-2 text-sm font-medium text-slate-600">
                   <button
                     onClick={goRoot}
@@ -237,38 +235,36 @@ export default function ContentsPage() {
 
               <button
                 onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-                className="px-4 py-2 text-m font-semibold bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-100 transition"
+                className="px-4 py-2 text-sm md:text-base font-semibold bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-100 transition"
               >
                 {viewMode === "grid" ? "Vista lista" : "Vista griglia"}
               </button>
             </div>
 
-            {/* CREATE FOLDER */}
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm font-semibold text-slate-600">
                 Cartelle
               </div>
 
-              <div className="flex textitems-center gap-2">
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
                   placeholder="Nuova cartella…"
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
-                  className="bg-white text-m px-3 py-2 rounded-lg border border-slate-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="bg-white text-sm md:text-base px-3 py-2 rounded-lg border border-slate-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 text-slate-900 placeholder-slate-400"
                 />
 
                 <button
                   onClick={createFolder}
                   disabled={!newFolderName.trim()}
-                  className="px-4 py-2 text-m font-bold bg-indigo-500 hover:bg-indigo-600 rounded-lg text-white shadow-md disabled:bg-slate-300 disabled:text-slate-500"
+                  className="px-4 py-2 text-sm md:text-base font-bold bg-indigo-500 hover:bg-indigo-600 rounded-lg text-white shadow-md disabled:bg-slate-300 disabled:text-slate-500"
                 >
                   +
                 </button>
               </div>
             </div>
 
-            {/* FOLDERS */}
             {!currentFolderId && (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-6">
                 {folders.map((f) => (
@@ -291,7 +287,7 @@ export default function ContentsPage() {
                         group-hover:scale-105 transition-transform
                       "
                     />
-                    <div className="text-base font-semibold text-slate-900 truncate w-full text-center mt-3">
+                    <div className="text-base md:text-lg font-semibold text-slate-900 truncate w-full text-center mt-3">
                       {f.name}
                     </div>
                   </div>
@@ -299,7 +295,6 @@ export default function ContentsPage() {
               </div>
             )}
 
-            {/* UPLOAD */}
             {showUpload && (
               <form
                 onSubmit={handleUpload}
@@ -310,7 +305,7 @@ export default function ContentsPage() {
                 "
               >
                 <div>
-                  <div className="text-lg font-bold text-slate-900">
+                  <div className="text-lg md:text-xl font-bold text-slate-900">
                     Carica nuovo contenuto
                   </div>
                   <div className="text-sm text-slate-500 mt-1">
@@ -337,7 +332,7 @@ export default function ContentsPage() {
                     type="submit"
                     disabled={!file || uploading}
                     className="
-                      px-4 py-2 rounded-xl text-sm font-semibold
+                      px-4 py-2 rounded-xl text-sm md:text-base font-semibold
                       bg-indigo-500 text-white
                       hover:bg-indigo-600
                       disabled:bg-slate-300 disabled:text-slate-500
@@ -351,7 +346,6 @@ export default function ContentsPage() {
               </form>
             )}
 
-            {/* CONTENTS */}
             {currentFolderId && (
               <>
                 {loading ? (
@@ -386,14 +380,14 @@ export default function ContentsPage() {
                             />
                           </div>
                         ) : (
-                          <div className="h-48 bg-slate-100 border-b border-slate-200 flex items_center justify-center text-sm text-slate-500">
+                          <div className="h-48 bg-slate-100 border-b border-slate-200 flex items-center justify-center text-sm text-slate-500">
                             Anteprima non disponibile ({c.type})
                           </div>
                         )}
 
                         <div className="p-5 flex-1 flex flex-col">
                           <div
-                            className="text-base font-semibold text-slate-900 truncate"
+                            className="text-base md:text-lg font-semibold text-slate-900 truncate"
                             title={c.name}
                           >
                             {c.name}
@@ -430,8 +424,8 @@ export default function ContentsPage() {
                       <div
                         key={c.id}
                         className="
-                          flex items-center justify_between
-                          bg_white/80 border border-slate-200 rounded-xl
+                          flex items-center justify-between
+                          bg-white/80 border border-slate-200 rounded-xl
                           px-4 py-3
                           hover:bg-white hover:shadow-md hover:shadow-slate-200/60
                           transition
@@ -449,7 +443,7 @@ export default function ContentsPage() {
                           </div>
 
                           <div className="min-w-0">
-                            <div className="text-sm font-semibold text-slate-900 truncate max-w-[180px] sm:max-w-[260px]">
+                            <div className="text-sm md:text-base font-semibold text-slate-900 truncate max-w-[180px] sm:max-w-[260px]">
                               {c.name}
                             </div>
                             <div className="text-xs text-slate-500">
