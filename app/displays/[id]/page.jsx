@@ -92,6 +92,41 @@ export default function DisplayDetailPage() {
     });
     alert(`Comando inviato: ${cmd}`);
   }
+  
+  async function assignPlaylist(playlistId) {
+    if (!playlistId) return;
+  
+    // 1) aggiorna display
+    const { error: err1 } = await supabase
+      .from("displays")
+      .update({
+        playlist_id: playlistId,
+        pairing_code: null, // rimuove pairing se ancora presente
+      })
+      .eq("id", id);
+  
+    if (err1) {
+      alert("Errore aggiornamento display");
+      return;
+    }
+  
+    // 2) invia comando remoto
+    const { error: err2 } = await supabase.from("commands").insert({
+      display_id: id,
+      type: "assignPlaylist",
+      status: "pending",
+      payload: { playlist_id: playlistId },
+    });
+  
+    if (err2) {
+      alert("Errore invio comando remoto");
+      return;
+    }
+  
+    alert("Playlist assegnata!");
+    loadData();
+  }
+
 
   return (
     <ProtectedRoute>
@@ -162,6 +197,24 @@ export default function DisplayDetailPage() {
                     </div>
                   </div>
                 </section>
+				{/* ASSEGNAZIONE PLAYLIST */}
+				<section
+				className="
+					rounded-2xl border border-slate-200 bg-white/90 p-6
+					shadow-sm hover:shadow-lg hover:shadow-slate-200/60 transition
+				"
+				>
+				<div className="text-lg font-bold text-slate-900 mb-4">
+					Assegna Playlist
+				</div>
+				
+				<PlaylistSelector
+					supabase={supabase}
+					displayId={id}
+					currentPlaylistId={display?.playlist_id}
+					onAssigned={() => loadData()}
+				/>
+				</section>
 
                 {/* COMANDI */}
                 <section
@@ -293,5 +346,97 @@ export default function DisplayDetailPage() {
         </div>
       </div>
     </ProtectedRoute>
+  );
+}
+
+function PlaylistSelector({ supabase, displayId, currentPlaylistId, onAssigned }) {
+  const [playlists, setPlaylists] = useState([]);
+  const [selected, setSelected] = useState(currentPlaylistId || "");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  async function loadPlaylists() {
+    setLoading(true);
+
+    const { data } = await supabase
+      .from("playlists")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    setPlaylists(data || []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    loadPlaylists();
+  }, []);
+
+  async function assign() {
+    if (!selected) return;
+
+    setSaving(true);
+
+    // 1) aggiorna display
+    const { error: err1 } = await supabase
+      .from("displays")
+      .update({
+        playlist_id: selected,
+        pairing_code: null,
+      })
+      .eq("id", displayId);
+
+    if (err1) {
+      alert("Errore aggiornamento display");
+      setSaving(false);
+      return;
+    }
+
+    // 2) invia comando remoto
+    const { error: err2 } = await supabase.from("commands").insert({
+      display_id: displayId,
+      type: "assignPlaylist",
+      status: "pending",
+      payload: { playlist_id: selected },
+    });
+
+    if (err2) {
+      alert("Errore invio comando remoto");
+      setSaving(false);
+      return;
+    }
+
+    setSaving(false);
+    onAssigned();
+  }
+
+  return (
+    <div className="space-y-4">
+      {loading ? (
+        <div className="text-sm text-slate-500">Caricamento playlist...</div>
+      ) : (
+        <>
+          <select
+            value={selected}
+            onChange={(e) => setSelected(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          >
+            <option value="">— Nessuna playlist —</option>
+            {playlists.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={assign}
+            disabled={saving || !selected}
+            className="px-6 py-3 rounded-xl text-sm font-semibold bg-indigo-500 text-white shadow-md shadow-indigo-200/50 hover:bg-indigo-600 transition disabled:opacity-50"
+          >
+            {saving ? "Assegnazione..." : "Assegna playlist"}
+          </button>
+        </>
+      )}
+    </div>
   );
 }
