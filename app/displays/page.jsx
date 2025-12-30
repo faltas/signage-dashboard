@@ -1,22 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSideBar } from "@/components/MobileSideBar";
 import { TopBar } from "@/components/TopBar";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function DisplaysPage() {
-  const router = useRouter();
-  // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
   const [displays, setDisplays] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
-  // 📡 Caricamento display + relazione playlist
   async function loadDisplays() {
     setLoading(true);
 
@@ -43,7 +38,6 @@ export default function DisplaysPage() {
   }
 
   useEffect(() => {
-
     loadDisplays();
 
     const channel = supabase
@@ -58,7 +52,6 @@ export default function DisplaysPage() {
     return () => supabase.removeChannel(channel);
   }, []);
 
-  // 🟢 Stato online/offline
   function IsOnline(status) {
     if (status === "on") return "bg-green-500";
     if (status === "off") return "bg-red-500";
@@ -66,7 +59,6 @@ export default function DisplaysPage() {
     return "bg-gray-500";
   }
 
-  // 🎨 Render pagina
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-50">
       <Sidebar />
@@ -80,8 +72,18 @@ export default function DisplaysPage() {
         />
 
         <main className="flex-1 px-6 md:px-8 py-6">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-1">
-            Tutti i display
+          {/* Header + pulsante aggiungi */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">
+              Tutti i display
+            </div>
+
+            <Link
+              href="/displays/add"
+              className="px-3 py-2 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-700 transition cursor-pointer"
+            >
+              + Aggiungi Display
+            </Link>
           </div>
 
           {loading ? (
@@ -91,47 +93,50 @@ export default function DisplaysPage() {
               Nessun display registrato.
             </div>
           ) : (
-			  <div>
-				<div className="text-xs text-slate-500 mb-4">
-				{displays.length} Displays
-				</div>
-				<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-				  {displays.map((d) => (
-					<div
-					  key={d.id}
-					  className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3"
-					>
-					  <div className="flex items-center justify-between">
-						<div className="text-sm font-semibold">{d.name}</div>
-						<div
-						  className={`w-2.5 h-2.5 rounded-full ${IsOnline(d.status)}`}
-						/>
-					  </div>
+            <div>
+              <div className="text-xs text-slate-500 mb-4">
+                {displays.length} Displays
+              </div>
 
-					  <div className="text-xs text-slate-500">
-						Playlist:{" "}
-						{d.playlists?.name || (
-						  <span className="text-slate-600">Nessuna</span>
-						)}
-					  </div>
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {displays.map((d) => (
+                  <div
+                    key={d.id}
+                    className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-semibold">{d.name}</div>
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full ${IsOnline(
+                          d.status
+                        )}`}
+                      />
+                    </div>
 
-					  <div className="text-xs text-slate-500">
-						Ultimo contatto:{" "}
-						{d.last_seen_at
-						  ? new Date(d.last_seen_at).toLocaleString()
-						  : "Mai"}
-					  </div>
+                    <div className="text-xs text-slate-500">
+                      Playlist:{" "}
+                      {d.playlists?.name || (
+                        <span className="text-slate-600">Nessuna</span>
+                      )}
+                    </div>
 
-					  <Link
-						href={`/displays/${d.id}`}
-						className="mt-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700 text-slate-100 hover:bg-slate-800 text-center"
-					  >
-						Dettagli
-					  </Link>
-					</div>
-				  ))}
-				</div>
-			  </div>
+                    <div className="text-xs text-slate-500">
+                      Ultimo contatto:{" "}
+                      {d.last_seen_at
+                        ? new Date(d.last_seen_at).toLocaleString()
+                        : "Mai"}
+                    </div>
+
+                    <Link
+                      href={`/displays/${d.id}`}
+                      className="mt-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700 text-slate-100 hover:bg-slate-800 text-center"
+                    >
+                      Dettagli
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </main>
       </div>
