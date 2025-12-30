@@ -10,26 +10,11 @@ import { useRouter } from "next/navigation";
 
 export default function DisplaysPage() {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
-
-  // 🔐 Protezione login
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        router.replace("/login");
-      } else {
-        setReady(true);
-      }
-    });
-  }, [router]);
-
-  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
-  if (!ready) return null;
-
   // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
   const [displays, setDisplays] = useState([]);
   const [loading, setLoading] = useState(true);
+
 
   // 📡 Caricamento display + relazione playlist
   async function loadDisplays() {
@@ -57,9 +42,7 @@ export default function DisplaysPage() {
     setLoading(false);
   }
 
-  // 🔄 Realtime + primo caricamento (SOLO dopo ready)
   useEffect(() => {
-    if (!ready) return;
 
     loadDisplays();
 
@@ -73,7 +56,7 @@ export default function DisplaysPage() {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [ready]);
+  }, []);
 
   // 🟢 Stato online/offline
   function IsOnline(status) {
@@ -97,7 +80,7 @@ export default function DisplaysPage() {
         />
 
         <main className="flex-1 px-6 md:px-8 py-6">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-4">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500 mb-1">
             Tutti i display
           </div>
 
@@ -108,42 +91,47 @@ export default function DisplaysPage() {
               Nessun display registrato.
             </div>
           ) : (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {displays.map((d) => (
-                <div
-                  key={d.id}
-                  className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold">{d.name}</div>
-                    <div
-                      className={`w-2.5 h-2.5 rounded-full ${IsOnline(d.status)}`}
-                    />
-                  </div>
+			  <div>
+				<div className="text-xs text-slate-500 mb-4">
+				{displays.length} Displays
+				</div>
+				<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+				  {displays.map((d) => (
+					<div
+					  key={d.id}
+					  className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3"
+					>
+					  <div className="flex items-center justify-between">
+						<div className="text-sm font-semibold">{d.name}</div>
+						<div
+						  className={`w-2.5 h-2.5 rounded-full ${IsOnline(d.status)}`}
+						/>
+					  </div>
 
-                  <div className="text-xs text-slate-500">
-                    Playlist:{" "}
-                    {d.playlists?.name || (
-                      <span className="text-slate-600">Nessuna</span>
-                    )}
-                  </div>
+					  <div className="text-xs text-slate-500">
+						Playlist:{" "}
+						{d.playlists?.name || (
+						  <span className="text-slate-600">Nessuna</span>
+						)}
+					  </div>
 
-                  <div className="text-xs text-slate-500">
-                    Ultimo contatto:{" "}
-                    {d.last_seen_at
-                      ? new Date(d.last_seen_at).toLocaleString()
-                      : "Mai"}
-                  </div>
+					  <div className="text-xs text-slate-500">
+						Ultimo contatto:{" "}
+						{d.last_seen_at
+						  ? new Date(d.last_seen_at).toLocaleString()
+						  : "Mai"}
+					  </div>
 
-                  <Link
-                    href={`/displays/${d.id}`}
-                    className="mt-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700 text-slate-100 hover:bg-slate-800 text-center"
-                  >
-                    Dettagli
-                  </Link>
-                </div>
-              ))}
-            </div>
+					  <Link
+						href={`/displays/${d.id}`}
+						className="mt-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700 text-slate-100 hover:bg-slate-800 text-center"
+					  >
+						Dettagli
+					  </Link>
+					</div>
+				  ))}
+				</div>
+			  </div>
           )}
         </main>
       </div>

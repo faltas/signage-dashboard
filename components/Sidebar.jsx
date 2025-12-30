@@ -1,7 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 const menuItems = [
   { href: "/displays", label: "Display" },
@@ -12,6 +13,12 @@ const menuItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  }
 
   return (
     <aside className="hidden md:flex w-64 h-screen bg-slate-950 border-r border-slate-800 flex-col">
@@ -49,6 +56,7 @@ export function Sidebar() {
           );
         })}
       </nav>
+
     </aside>
   );
 }

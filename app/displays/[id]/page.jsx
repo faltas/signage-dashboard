@@ -12,22 +12,6 @@ export default function DisplayDetailPage() {
   if (!id) return null;
   const router = useRouter();
 
-  const [ready, setReady] = useState(false);
-
-  // 🔐 Protezione login
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        router.replace("/login");
-      } else {
-        setReady(true);
-      }
-    });
-  }, [router]);
-
-  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
-  if (!ready) return null;
-
   // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
   const [display, setDisplay] = useState(null);
@@ -87,9 +71,8 @@ export default function DisplayDetailPage() {
     setLoading(false);
   }
 
-  // 🔄 Caricamento dati SOLO dopo ready
   useEffect(() => {
-    if (!ready || !id) return;
+    if (!id) return;
 
     loadData();
 
@@ -103,7 +86,7 @@ export default function DisplayDetailPage() {
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [ready, id]);
+  }, [id]);
 
   async function sendCommand(cmd) {
     await supabase.from("display_logs").insert({

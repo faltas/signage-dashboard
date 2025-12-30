@@ -13,22 +13,6 @@ export default function PlaylistDetailPage() {
   const { id } = useParams();
   if (!id) return null;
 
-  const [ready, setReady] = useState(false);
-
-  // 🔐 Protezione login
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        router.replace("/login");
-      } else {
-        setReady(true);
-      }
-    });
-  }, [router]);
-
-  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
-  if (!ready) return null;
-
   // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
   const [playlist, setPlaylist] = useState(null);
@@ -70,11 +54,10 @@ export default function PlaylistDetailPage() {
     setLoading(false);
   }
 
-  // 🔄 Caricamento SOLO dopo ready
   useEffect(() => {
-    if (!ready || !id) return;
+    if (!id) return;
     loadData();
-  }, [ready, id]);
+  }, [id]);
 
   async function addContentToPlaylist(contentId) {
     const newPosition = items.length;

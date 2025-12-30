@@ -9,21 +9,6 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
-
-  // 🔐 Protezione login
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        router.replace("/login");
-      } else {
-        setReady(true);
-      }
-    });
-  }, [router]);
-
-  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
-  if (!ready) return null;
 
   const [menuOpen, setMenuOpen] = useState(false);
 

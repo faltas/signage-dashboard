@@ -10,21 +10,6 @@ import Link from "next/link";
 
 export default function PlaylistsPage() {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
-
-  // 🔐 Protezione login
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) {
-        router.replace("/login");
-      } else {
-        setReady(true);
-      }
-    });
-  }, [router]);
-
-  // ⛔ Finché non sappiamo se l’utente è loggato, NON renderizziamo nulla
-  if (!ready) return null;
 
   // 🔽 Stato locale della pagina
   const [menuOpen, setMenuOpen] = useState(false);
@@ -46,11 +31,9 @@ export default function PlaylistsPage() {
     setLoading(false);
   }
 
-  // 🔄 Primo caricamento SOLO dopo ready
   useEffect(() => {
-    if (!ready) return;
     loadPlaylists();
-  }, [ready]);
+  }, []);
 
   async function createPlaylist(e) {
     e.preventDefault();
