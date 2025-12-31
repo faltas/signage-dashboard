@@ -97,6 +97,7 @@ export default function AddDisplayPage() {
         .update({
           user_id: user.id,
           status: "on",
+		  pairing_code: null
         })
         .eq("pairing_code", normalizedCode)
         .is("user_id", null)

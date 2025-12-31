@@ -11,7 +11,9 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 export default function DisplayDetailPage() {
   const { id } = useParams();
   if (!id) return null;
+
   const router = useRouter();
+  const supabase = useSupabase();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [display, setDisplay] = useState(null);
@@ -19,7 +21,6 @@ export default function DisplayDetailPage() {
   const [logs, setLogs] = useState([]);
   const [screenshots, setScreenshots] = useState([]);
   const [loading, setLoading] = useState(true);
-  const supabase = useSupabase();
 
   function isOnline(status) {
     if (status === "on") return "bg-green-500";
@@ -39,6 +40,7 @@ export default function DisplayDetailPage() {
         status,
         last_seen_at,
         playlist_id,
+        projection_mode,
         playlists:playlist_id ( name )
       `)
       .eq("id", id)
@@ -90,43 +92,30 @@ export default function DisplayDetailPage() {
       type: "command",
       message: cmd,
     });
+
+    await supabase.from("commands").insert({
+      display_id: id,
+      type: cmd,
+      status: "pending",
+    });
+
     alert(`Comando inviato: ${cmd}`);
   }
-  
-  async function assignPlaylist(playlistId) {
-    if (!playlistId) return;
-  
-    // 1) aggiorna display
-    const { error: err1 } = await supabase
+
+  async function updateProjectionMode(mode) {
+    await supabase
       .from("displays")
-      .update({
-        playlist_id: playlistId,
-        pairing_code: null, // rimuove pairing se ancora presente
-      })
+      .update({ projection_mode: mode })
       .eq("id", id);
-  
-    if (err1) {
-      alert("Errore aggiornamento display");
-      return;
-    }
-  
-    // 2) invia comando remoto
-    const { error: err2 } = await supabase.from("commands").insert({
+
+    await supabase.from("commands").insert({
       display_id: id,
-      type: "assignPlaylist",
+      type: "reloadPlaylist",
       status: "pending",
-      payload: { playlist_id: playlistId },
     });
-  
-    if (err2) {
-      alert("Errore invio comando remoto");
-      return;
-    }
-  
-    alert("Playlist assegnata!");
+
     loadData();
   }
-
 
   return (
     <ProtectedRoute>
@@ -148,7 +137,6 @@ export default function DisplayDetailPage() {
           />
 
           <main className="flex-1 px-6 md:px-10 py-10 space-y-10">
-
             {loading ? (
               <div className="text-sm text-slate-500">Caricamento...</div>
             ) : (
@@ -197,24 +185,57 @@ export default function DisplayDetailPage() {
                     </div>
                   </div>
                 </section>
-				{/* ASSEGNAZIONE PLAYLIST */}
-				<section
-				className="
-					rounded-2xl border border-slate-200 bg-white/90 p-6
-					shadow-sm hover:shadow-lg hover:shadow-slate-200/60 transition
-				"
-				>
-				<div className="text-lg font-bold text-slate-900 mb-4">
-					Assegna Playlist
-				</div>
-				
-				<PlaylistSelector
-					supabase={supabase}
-					displayId={id}
-					currentPlaylistId={display?.playlist_id}
-					onAssigned={() => loadData()}
-				/>
-				</section>
+
+                {/* ASSEGNAZIONE PLAYLIST */}
+                <section
+                  className="
+                    rounded-2xl border border-slate-200 bg-white/90 p-6
+                    shadow-sm hover:shadow-lg hover:shadow-slate-200/60 transition
+                  "
+                >
+                  <div className="text-lg font-bold text-slate-900 mb-4">
+                    Assegna Playlist
+                  </div>
+
+                  <PlaylistSelector
+                    supabase={supabase}
+                    displayId={id}
+                    currentPlaylistId={display?.playlist_id}
+                    onAssigned={() => loadData()}
+                  />
+                </section>
+
+                {/* MODALITÀ DI PROIEZIONE */}
+                <section
+                  className="
+                    rounded-2xl border border-slate-200 bg-white/90 p-6
+                    shadow-sm hover:shadow-lg hover:shadow-slate-200/60 transition
+                  "
+                >
+                  <div className="text-lg font-bold text-slate-900 mb-4">
+                    Modalità di proiezione
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <select
+                      className="
+                        px-4 py-2 rounded-xl border border-slate-300 bg-white
+                        text-slate-700 shadow-sm hover:bg-slate-50 transition
+                      "
+                      value={display?.projection_mode || "auto"}
+                      onChange={(e) => updateProjectionMode(e.target.value)}
+                    >
+                      <option value="auto">Auto (Smart)</option>
+                      <option value="contain">Fit (senza tagli)</option>
+                      <option value="cover">Cover (riempi tutto)</option>
+                      <option value="fill">Stretch (deforma)</option>
+                    </select>
+
+                    <div className="text-sm text-slate-500">
+                      Scegli come il contenuto viene adattato allo schermo.
+                    </div>
+                  </div>
+                </section>
 
                 {/* COMANDI */}
                 <section

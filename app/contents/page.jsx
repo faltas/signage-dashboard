@@ -117,14 +117,15 @@ export default function ContentsPage() {
   async function handleUpload(e) {
     e.preventDefault();
     if (!file || !currentFolderId) return;
-
+  
     setUploading(true);
-
+  
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
       const path = `${Date.now()}-${file.name}`;
       const contentType = file.type || "application/octet-stream";
-
+  
+      // 1) Upload su Supabase Storage
       const { data: storageData } = await supabase.storage
         .from("contents")
         .upload(path, file, {
@@ -132,21 +133,52 @@ export default function ContentsPage() {
           upsert: false,
           contentType,
         });
-
+  
       const {
         data: { publicUrl },
       } = supabase.storage.from("contents").getPublicUrl(storageData.path);
-
+  
+      // 2) Determina tipo contenuto
       let type = "altro";
       if (contentType.startsWith("image/")) type = "immagine";
       else if (contentType.startsWith("video/")) type = "video";
       else if (contentType === "application/pdf") type = "documento";
       else if (ext === "html") type = "html";
-
+  
+      // 3) Leggi dimensioni (solo immagini e video)
+      let detectedWidth = null;
+      let detectedHeight = null;
+  
+      if (type === "immagine") {
+        await new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            detectedWidth = img.width;
+            detectedHeight = img.height;
+            resolve();
+          };
+          img.src = publicUrl;
+        });
+      }
+  
+      if (type === "video") {
+        await new Promise((resolve) => {
+          const video = document.createElement("video");
+          video.onloadedmetadata = () => {
+            detectedWidth = video.videoWidth;
+            detectedHeight = video.videoHeight;
+            resolve();
+          };
+          video.src = publicUrl;
+        });
+      }
+  
+      // 4) Recupera utente
       const {
         data: { user },
       } = await supabase.auth.getUser();
-
+  
+      // 5) Salva record nel DB
       await supabase.from("contents").insert({
         name: file.name,
         type,
@@ -154,8 +186,10 @@ export default function ContentsPage() {
         size_bytes: file.size,
         folder: currentFolderId,
         user_id: user.id,
+        width: detectedWidth,
+        height: detectedHeight,
       });
-
+  
       setFile(null);
       loadContents();
     } finally {
