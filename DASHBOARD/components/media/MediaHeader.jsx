@@ -40,7 +40,7 @@ export function MediaHeader({ currentFolder, searchQuery, setSearchQuery, viewMo
         </div>
 
         {/* VIEW MODE SWITCHER */}
-        <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border/20">
+        <div className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border/20">
           <Button
             variant={viewMode === "grid" ? "white" : "ghost"}
             size="icon"

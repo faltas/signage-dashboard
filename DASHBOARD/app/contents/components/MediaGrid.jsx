@@ -17,7 +17,7 @@ export function MediaGrid({ items, viewMode, formatBytes, getFileIcon, onDelete 
               className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors group"
             >
               {/* LEFT SIDE */}
-              <div className="flex items-center gap-4 min-w-0 flex-1">
+              <div className="flex items-center gap-4 min-w-0 flex-1 ">
                 {/* ICON */}
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
                   {getFileIcon(c.type)}

@@ -1601,7 +1601,7 @@ function MediaHeader({ currentFolder, searchQuery, setSearchQuery, viewMode, set
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border/20",
+                        className: "hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-lg border border-border/20",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
                                 variant: viewMode === "grid" ? "white" : "ghost",
@@ -1780,7 +1780,7 @@ function MediaGrid({ items, viewMode, formatBytes, getFileIcon, onDelete }) {
                         className: "flex items-center justify-between p-4 hover:bg-muted/30 transition-colors group",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "flex items-center gap-4 min-w-0 flex-1",
+                                className: "flex items-center gap-4 min-w-0 flex-1 ",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0",
@@ -2223,6 +2223,7 @@ function ContentsPage() {
     const [file, setFile] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [newFolderName, setNewFolderName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
     const [searchQuery, setSearchQuery] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
+    const isMobile = ("TURBOPACK compile-time value", "undefined") !== "undefined" && window.innerWidth < 768;
     const currentFolder = currentFolderId ? folders.find((f)=>f.id === currentFolderId) || null : null;
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         loadFolders();
@@ -2301,7 +2302,7 @@ function ContentsPage() {
                     setOpen: setSidebarOpen
                 }, void 0, false, {
                     fileName: "[project]/app/contents/page.jsx",
-                    lineNumber: 152,
+                    lineNumber: 154,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2313,7 +2314,7 @@ function ContentsPage() {
                             onMenuClick: ()=>setSidebarOpen(true)
                         }, void 0, false, {
                             fileName: "[project]/app/contents/page.jsx",
-                            lineNumber: 155,
+                            lineNumber: 157,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -2327,7 +2328,7 @@ function ContentsPage() {
                                     setViewMode: setViewMode
                                 }, void 0, false, {
                                     fileName: "[project]/app/contents/page.jsx",
-                                    lineNumber: 163,
+                                    lineNumber: 165,
                                     columnNumber: 13
                                 }, this),
                                 !currentFolderId && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2346,14 +2347,14 @@ function ContentsPage() {
                                                                     className: "w-5 h-5 text-primary"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/contents/page.jsx",
-                                                                    lineNumber: 176,
+                                                                    lineNumber: 178,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 t("directories")
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/contents/page.jsx",
-                                                            lineNumber: 175,
+                                                            lineNumber: 177,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2361,13 +2362,13 @@ function ContentsPage() {
                                                             children: "Manage your content organization"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/contents/page.jsx",
-                                                            lineNumber: 179,
+                                                            lineNumber: 181,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/contents/page.jsx",
-                                                    lineNumber: 174,
+                                                    lineNumber: 176,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2380,7 +2381,7 @@ function ContentsPage() {
                                                             onChange: (e)=>setNewFolderName(e.target.value)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/contents/page.jsx",
-                                                            lineNumber: 183,
+                                                            lineNumber: 185,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2391,7 +2392,7 @@ function ContentsPage() {
                                                                     className: "w-4 h-4 mr-2"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/contents/page.jsx",
-                                                                    lineNumber: 190,
+                                                                    lineNumber: 192,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 " ",
@@ -2399,19 +2400,19 @@ function ContentsPage() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/contents/page.jsx",
-                                                            lineNumber: 189,
+                                                            lineNumber: 191,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/contents/page.jsx",
-                                                    lineNumber: 182,
+                                                    lineNumber: 184,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/contents/page.jsx",
-                                            lineNumber: 173,
+                                            lineNumber: 175,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2426,12 +2427,12 @@ function ContentsPage() {
                                                                 className: "w-8 h-8 text-primary"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/contents/page.jsx",
-                                                                lineNumber: 203,
+                                                                lineNumber: 205,
                                                                 columnNumber: 25
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/contents/page.jsx",
-                                                            lineNumber: 202,
+                                                            lineNumber: 204,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2439,24 +2440,24 @@ function ContentsPage() {
                                                             children: f.name
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/contents/page.jsx",
-                                                            lineNumber: 205,
+                                                            lineNumber: 207,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, f.id, true, {
                                                     fileName: "[project]/app/contents/page.jsx",
-                                                    lineNumber: 197,
+                                                    lineNumber: 199,
                                                     columnNumber: 21
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/app/contents/page.jsx",
-                                            lineNumber: 195,
+                                            lineNumber: 197,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/contents/page.jsx",
-                                    lineNumber: 172,
+                                    lineNumber: 174,
                                     columnNumber: 15
                                 }, this),
                                 currentFolderId && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2474,7 +2475,7 @@ function ContentsPage() {
                                                             className: "w-4 h-4 rotate-180"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/contents/page.jsx",
-                                                            lineNumber: 222,
+                                                            lineNumber: 224,
                                                             columnNumber: 21
                                                         }, this),
                                                         " ",
@@ -2482,7 +2483,7 @@ function ContentsPage() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/contents/page.jsx",
-                                                    lineNumber: 217,
+                                                    lineNumber: 219,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -2495,7 +2496,7 @@ function ContentsPage() {
                                                             className: "bg-background w-full sm:w-80 cursor-pointer text-sm"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/contents/page.jsx",
-                                                            lineNumber: 229,
+                                                            lineNumber: 231,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2508,7 +2509,7 @@ function ContentsPage() {
                                                                         className: "w-4 h-4 mr-2 animate-spin"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/contents/page.jsx",
-                                                                        lineNumber: 242,
+                                                                        lineNumber: 244,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     t("syncing")
@@ -2519,7 +2520,7 @@ function ContentsPage() {
                                                                         className: "w-4 h-4 mr-2"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/contents/page.jsx",
-                                                                        lineNumber: 247,
+                                                                        lineNumber: 249,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     " ",
@@ -2528,19 +2529,19 @@ function ContentsPage() {
                                                             }, void 0, true)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/contents/page.jsx",
-                                                            lineNumber: 235,
+                                                            lineNumber: 237,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/contents/page.jsx",
-                                                    lineNumber: 225,
+                                                    lineNumber: 227,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/contents/page.jsx",
-                                            lineNumber: 216,
+                                            lineNumber: 218,
                                             columnNumber: 17
                                         }, this),
                                         loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2550,7 +2551,7 @@ function ContentsPage() {
                                                     className: "w-10 h-10 animate-spin text-primary"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/contents/page.jsx",
-                                                    lineNumber: 256,
+                                                    lineNumber: 258,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2558,52 +2559,52 @@ function ContentsPage() {
                                                     children: "Loading contents..."
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/contents/page.jsx",
-                                                    lineNumber: 257,
+                                                    lineNumber: 259,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/contents/page.jsx",
-                                            lineNumber: 255,
+                                            lineNumber: 257,
                                             columnNumber: 19
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$contents$2f$components$2f$MediaGrid$2e$jsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["MediaGrid"], {
                                             items: filteredContents,
-                                            viewMode: viewMode,
+                                            viewMode: ("TURBOPACK compile-time falsy", 0) ? "TURBOPACK unreachable" : viewMode,
                                             formatBytes: formatBytes,
                                             getFileIcon: getFileIcon,
                                             onDelete: handleDelete
                                         }, void 0, false, {
                                             fileName: "[project]/app/contents/page.jsx",
-                                            lineNumber: 260,
+                                            lineNumber: 262,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/contents/page.jsx",
-                                    lineNumber: 215,
+                                    lineNumber: 217,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/contents/page.jsx",
-                            lineNumber: 161,
+                            lineNumber: 163,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/contents/page.jsx",
-                    lineNumber: 154,
+                    lineNumber: 156,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/contents/page.jsx",
-            lineNumber: 151,
+            lineNumber: 153,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/contents/page.jsx",
-        lineNumber: 150,
+        lineNumber: 152,
         columnNumber: 5
     }, this);
 }

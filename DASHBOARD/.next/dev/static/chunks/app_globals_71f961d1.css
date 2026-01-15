@@ -1178,6 +1178,10 @@
     max-width: 60vw;
   }
 
+  .max-w-\[70\%\] {
+    max-width: 70%;
+  }
+
   .max-w-\[95vw\] {
     max-width: 95vw;
   }
@@ -1212,6 +1216,30 @@
 
   .max-w-\[calc\(100\%-2rem\)\] {
     max-width: calc(100% - 2rem);
+  }
+
+  .max-w-\[calc\(100\%-20px\)\] {
+    max-width: calc(100% - 20px);
+  }
+
+  .max-w-\[calc\(100\%-40px\)\] {
+    max-width: calc(100% - 40px);
+  }
+
+  .max-w-\[calc\(100\%-60px\)\] {
+    max-width: calc(100% - 60px);
+  }
+
+  .max-w-\[calc\(100\%-80px\)\] {
+    max-width: calc(100% - 80px);
+  }
+
+  .max-w-\[calc\(100\%-100px\)\] {
+    max-width: calc(100% - 100px);
+  }
+
+  .max-w-full {
+    max-width: 100%;
   }
 
   .max-w-lg {

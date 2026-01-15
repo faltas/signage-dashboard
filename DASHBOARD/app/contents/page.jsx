@@ -60,6 +60,8 @@ export default function ContentsPage() {
   const [newFolderName, setNewFolderName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
   const currentFolder = currentFolderId
     ? folders.find((f) => f.id === currentFolderId) || null
     : null;
@@ -259,7 +261,7 @@ export default function ContentsPage() {
                 ) : (
                   <MediaGrid
                     items={filteredContents}
-                    viewMode={viewMode}
+                    viewMode={isMobile ? "grid" : viewMode}
                     formatBytes={formatBytes}
                     getFileIcon={getFileIcon}
                     onDelete={handleDelete}
