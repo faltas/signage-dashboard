@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "regions": ["iad1"],
+  "functions": {
+    "app/api/**/*.js": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 10
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

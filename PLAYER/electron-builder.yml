@@ -1,0 +1,35 @@
+appId: com.yourcompany.signage
+productName: DigitalSignagePlayer
+
+directories:
+  output: dist
+
+files:
+  - "main/**/*"
+  - preload/preload.cjs
+  - renderer/**
+  - assets/**
+  - package.json
+
+win:
+  target: nsis
+  icon: assets/icon.ico
+  sign: false
+  certificateFile: null
+  certificatePassword: null
+  signingHashAlgorithms: []
+  publisherName: null
+  verifyUpdateCodeSignature: false
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  runAfterFinish: true
+
+mac:
+  target: dmg
+
+linux:
+  target: AppImage

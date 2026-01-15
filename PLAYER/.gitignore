@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Cache
+.cache/
+*.cache
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Environment (keep env.json template)
+.env
+.env.local
+
+# Player specific
+DigitalSignageCache/
+preload/player-config.json
+
+# Testing
+coverage/
+
+# Temporary
+temp/
+tmp/
+
+# Electron
+.electron/

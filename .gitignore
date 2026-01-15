@@ -1,0 +1,5 @@
+-e 
+# Environment files
+*.env
+*.env.*
+.aider*

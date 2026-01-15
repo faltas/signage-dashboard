@@ -1,0 +1,46 @@
+modules = ["nodejs-20", "web"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Dashboard"
+
+[[workflows.workflow]]
+name = "Dashboard"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd DASHBOARD && npm run dev -- -p 5000 -H 0.0.0.0"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["npm", "run", "start", "--prefix", "DASHBOARD", "--", "-p", "5000", "-H", "0.0.0.0"]
+build = ["npm", "run", "build", "--prefix", "DASHBOARD"]
+
+[userenv]
+
+[userenv.shared]
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0bGxmY3hzaGxrbWpibGF2c3N1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njg0Nzc4NCwiZXhwIjoyMDgyNDIzNzg0fQ.xp30kX6iYFeVZIDqoeD8p0jk0iZiXLoAJwUNmod8-lM"
+SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0bGxmY3hzaGxrbWpibGF2c3N1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njg0Nzc4NCwiZXhwIjoyMDgyNDIzNzg0fQ.xp30kX6iYFeVZIDqoeD8p0jk0iZiXLoAJwUNmod8-lM"
+NEXT_PUBLIC_SUPABASE_URL = "https://etllfcxshlkmjblavssu.supabase.co"

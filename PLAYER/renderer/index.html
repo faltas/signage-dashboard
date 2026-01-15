@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Digital Signage Player</title>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        background: black;
+        overflow: hidden;
+      }
+      #root {
+        width: 100vw;
+        height: 100vh;
+      }
+      #virtual-canvas {
+        background: black;
+      }
+      .screen-mask {
+        position: absolute;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
