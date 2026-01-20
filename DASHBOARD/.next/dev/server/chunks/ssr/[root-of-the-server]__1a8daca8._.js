@@ -1446,7 +1446,7 @@ function useDisplays() {
         wall_id,
         projection_mode,
         walls:wall_id ( id, name, type, rows, columns ),
-        display_screens ( id, screen_index, width, height, is_primary, resolution )
+        display_screens ( id, windowindex, width, height, is_primary, resolution )
       `).not("user_id", "is", null).order("created_at", {
             ascending: false
         });
@@ -1455,20 +1455,50 @@ function useDisplays() {
     }
     async function SavePlayerName(id, name) {
         const { error } = await supabase.from("displays").update({
-            name: name
+            name
         }).eq("id", id);
-        if (error) console.error("Errore aggiornamento nome:", error);
-        return false;
-        //TURBOPACK unreachable
-        ;
+        if (error) {
+            console.error("Errore aggiornamento nome:", error);
+            return false;
+        }
+        // Aggiorna solo il record modificato
+        setDisplays((prev)=>prev.map((d)=>d.id === id ? {
+                    ...d,
+                    name
+                } : d));
+        return true;
     }
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         load();
-        const channel = supabase.channel("displays-realtime").on("postgres_changes", {
-            event: "*",
+        const channel = supabase.channel("displays-realtime");
+        // UPDATE → aggiorna solo quel display
+        channel.on("postgres_changes", {
+            event: "UPDATE",
             schema: "public",
             table: "displays"
-        }, load).subscribe();
+        }, (payload)=>{
+            setDisplays((prev)=>prev.map((d)=>d.id === payload.new.id ? payload.new : d));
+        });
+        // INSERT → aggiungi solo il nuovo display
+        channel.on("postgres_changes", {
+            event: "INSERT",
+            schema: "public",
+            table: "displays"
+        }, (payload)=>{
+            setDisplays((prev)=>[
+                    payload.new,
+                    ...prev
+                ]);
+        });
+        // DELETE → rimuovi solo quello eliminato
+        channel.on("postgres_changes", {
+            event: "DELETE",
+            schema: "public",
+            table: "displays"
+        }, (payload)=>{
+            setDisplays((prev)=>prev.filter((d)=>d.id !== payload.old.id));
+        });
+        channel.subscribe();
         return ()=>supabase.removeChannel(channel);
     }, []);
     return {

@@ -1900,6 +1900,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$down$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronDown$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-down.js [app-ssr] (ecmascript) <export default as ChevronDown>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/badge.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/button.tsx [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$providers$2e$jsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/app/providers.jsx [app-ssr] (ecmascript)");
+;
 ;
 ;
 ;
@@ -1908,6 +1910,29 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2
 function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, onSettingChange, onCommand }) {
     const [brightness, setBrightness] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(screen.brightness || 100);
     const [resolution, setResolution] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(screen.resolution || `${screen.width}x${screen.height}`);
+    const supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$app$2f$providers$2e$jsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useSupabase"])();
+    const updateScreenBrightness = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(async (screenId, level)=>{
+        const { error } = await supabase.from("display_screens").update({
+            brightness: level
+        }).eq("id", screenId);
+        if (!error) {
+            await onCommand("screen_brightness", screenId, "screen");
+        }
+    }, [
+        supabase,
+        onCommand
+    ]);
+    const updateScreenRisolution = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(async (screenId, resolution)=>{
+        const { error } = await supabase.from("display_screens").update({
+            resolution: resolution
+        }).eq("id", screenId);
+        if (!error) {
+            await onCommand("screen_brightness", screenId, "screen");
+        }
+    }, [
+        supabase,
+        onCommand
+    ]);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: `border rounded-xl overflow-hidden transition-all duration-300 ${expanded ? "bg-card shadow-md border-primary/20" : "bg-card border-border/40 hover:border-border"}`,
         children: [
@@ -1924,12 +1949,12 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                     className: "w-6 h-6"
                                 }, void 0, false, {
                                     fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                    lineNumber: 18,
+                                    lineNumber: 43,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                lineNumber: 17,
+                                lineNumber: 42,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1941,11 +1966,11 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                                 className: "font-semibold text-lg text-foreground",
                                                 children: [
                                                     "Schermo ",
-                                                    screen.screen_index + 1
+                                                    screen.windowindex
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                lineNumber: 22,
+                                                lineNumber: 47,
                                                 columnNumber: 15
                                             }, this),
                                             screen.is_primary && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -1954,13 +1979,13 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                                 children: "Main"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                lineNumber: 23,
+                                                lineNumber: 48,
                                                 columnNumber: 37
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                        lineNumber: 21,
+                                        lineNumber: 46,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1974,19 +1999,19 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                        lineNumber: 25,
+                                        lineNumber: 50,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                lineNumber: 20,
+                                lineNumber: 45,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                        lineNumber: 16,
+                        lineNumber: 41,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2000,14 +2025,14 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                         className: "w-3.5 h-3.5 text-primary"
                                     }, void 0, false, {
                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                        lineNumber: 32,
+                                        lineNumber: 57,
                                         columnNumber: 13
                                     }, this),
                                     screen.playlists?.name || "Nessuna playlist"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                lineNumber: 31,
+                                lineNumber: 56,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2016,24 +2041,24 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                     className: "w-5 h-5 text-muted-foreground"
                                 }, void 0, false, {
                                     fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                    lineNumber: 36,
+                                    lineNumber: 61,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                lineNumber: 35,
+                                lineNumber: 60,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                        lineNumber: 30,
+                        lineNumber: 55,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                lineNumber: 12,
+                lineNumber: 37,
                 columnNumber: 7
             }, this),
             expanded && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2049,7 +2074,7 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                     children: "Playlist Assignment"
                                 }, void 0, false, {
                                     fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                    lineNumber: 45,
+                                    lineNumber: 70,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -2062,7 +2087,7 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                             children: "— Nessuna playlist —"
                                         }, void 0, false, {
                                             fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                            lineNumber: 51,
+                                            lineNumber: 76,
                                             columnNumber: 17
                                         }, this),
                                         playlists.map((p)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2070,24 +2095,24 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                                 children: p.name
                                             }, p.id, false, {
                                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                lineNumber: 53,
+                                                lineNumber: 78,
                                                 columnNumber: 19
                                             }, this))
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                    lineNumber: 46,
+                                    lineNumber: 71,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                            lineNumber: 44,
+                            lineNumber: 69,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                        lineNumber: 43,
+                        lineNumber: 68,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2101,7 +2126,7 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                         children: "Brightness Calibration"
                                     }, void 0, false, {
                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                        lineNumber: 61,
+                                        lineNumber: 86,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2116,7 +2141,7 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                                 className: "flex-1 accent-primary h-2 bg-muted rounded-lg appearance-none cursor-pointer"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                lineNumber: 63,
+                                                lineNumber: 88,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2127,29 +2152,29 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                lineNumber: 71,
+                                                lineNumber: 96,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
                                                 size: "sm",
-                                                onClick: ()=>onCommand(`set_brightness:${brightness}`),
+                                                onClick: ()=>updateScreenBrightness(screen.id, brightness),
                                                 className: "h-8 text-xs",
                                                 children: "Applica"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                lineNumber: 72,
+                                                lineNumber: 97,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                        lineNumber: 62,
+                                        lineNumber: 87,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                lineNumber: 60,
+                                lineNumber: 85,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2160,7 +2185,7 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                         children: "Resolution Protocol"
                                     }, void 0, false, {
                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                        lineNumber: 83,
+                                        lineNumber: 108,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2176,7 +2201,7 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                                         children: "3840x2160 (4K)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                        lineNumber: 90,
+                                                        lineNumber: 115,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2184,7 +2209,7 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                                         children: "1920x1080 (Full HD)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                        lineNumber: 91,
+                                                        lineNumber: 116,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -2192,54 +2217,54 @@ function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, o
                                                         children: "1280x720 (HD)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                        lineNumber: 92,
+                                                        lineNumber: 117,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                lineNumber: 85,
+                                                lineNumber: 110,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
                                                 variant: "outline",
                                                 size: "sm",
                                                 className: "h-10 px-4",
-                                                onClick: ()=>onCommand(`set_resolution:${resolution}`),
+                                                onClick: ()=>updateScreenRisolution(screen.id, resolution),
                                                 children: "Set"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                                lineNumber: 94,
+                                                lineNumber: 119,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                        lineNumber: 84,
+                                        lineNumber: 109,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                                lineNumber: 82,
+                                lineNumber: 107,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                        lineNumber: 59,
+                        lineNumber: 84,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-                lineNumber: 42,
+                lineNumber: 67,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/displays/[id]/components/ScreenCard.jsx",
-        lineNumber: 11,
+        lineNumber: 36,
         columnNumber: 5
     }, this);
 }
@@ -2309,7 +2334,7 @@ function DisplayDetailPage() {
         const { data: screensData } = await supabase.from("display_screens").select(`
         *,
         playlists:playlist_id ( id, name )
-      `).eq("display_id", id).order("screen_index", {
+      `).eq("display_id", id).order("windowindex", {
             ascending: true
         });
         setScreens(screensData || []);
@@ -2349,18 +2374,70 @@ function DisplayDetailPage() {
     ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (!id) return;
-        loadData();
-        const channel = supabase.channel(`display-detail-${id}`).on("postgres_changes", {
-            event: "*",
+        loadData(); // primo caricamento
+        const channel = supabase.channel(`display-detail-${id}`);
+        // 1. Cambi nel record del display
+        channel.on("postgres_changes", {
+            event: "UPDATE",
             schema: "public",
             table: "displays",
             filter: `id=eq.${id}`
-        }, loadData).on("postgres_changes", {
+        }, (payload)=>{
+            setDisplay(payload.new);
+        });
+        // 2. Cambi negli screen (aggiunta, rimozione, update)
+        channel.on("postgres_changes", {
             event: "*",
             schema: "public",
             table: "display_screens",
             filter: `display_id=eq.${id}`
-        }, loadData).subscribe();
+        }, async ()=>{
+            const { data } = await supabase.from("display_screens").select("*, playlists:playlist_id (id, name)").eq("display_id", id).order("windowindex", {
+                ascending: true
+            });
+            setScreens(data || []);
+        });
+        // 3. Cambi negli items delle playlist
+        channel.on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "playlist_items"
+        }, async (payload)=>{
+            const plId = payload.new?.playlist_id || payload.old?.playlist_id;
+            if (!plId) return;
+            const { data } = await supabase.from("playlist_items").select("*, contents(*)").eq("playlist_id", plId).order("position", {
+                ascending: true
+            });
+            setPlaylistItems((prev)=>({
+                    ...prev,
+                    [plId]: data || []
+                }));
+        });
+        // 4. Nuovi log
+        channel.on("postgres_changes", {
+            event: "INSERT",
+            schema: "public",
+            table: "display_logs",
+            filter: `display_id=eq.${id}`
+        }, (payload)=>{
+            setLogs((prev)=>[
+                    payload.new,
+                    ...prev.slice(0, 19)
+                ]);
+        });
+        // 5. Nuovi screenshot
+        channel.on("postgres_changes", {
+            event: "INSERT",
+            schema: "public",
+            table: "display_screenshots",
+            filter: `display_id=eq.${id}`
+        }, (payload)=>{
+            setScreenshots((prev)=>[
+                    payload.new,
+                    ...prev.slice(0, 3)
+                ]);
+        });
+        channel.subscribe();
         return ()=>supabase.removeChannel(channel);
     }, [
         id,
@@ -2376,7 +2453,7 @@ function DisplayDetailPage() {
         });
         await supabase.from("display_commands").insert({
             display_id: id,
-            command_type: cmd,
+            type: cmd,
             params: {
                 target_id: cmdTargetId,
                 target_type: targetType
@@ -2423,7 +2500,7 @@ function DisplayDetailPage() {
                         }
                         contentMap.get(contentId).screens.push({
                             screenId: screen.id,
-                            screenIndex: screen.screen_index,
+                            screenIndex: screen.windowindex,
                             playlistItemId: item.id
                         });
                     }
@@ -2476,7 +2553,7 @@ function DisplayDetailPage() {
                     setOpen: setSidebarOpen
                 }, void 0, false, {
                     fileName: "[project]/app/displays/[id]/page.jsx",
-                    lineNumber: 211,
+                    lineNumber: 273,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2488,7 +2565,7 @@ function DisplayDetailPage() {
                             onMenuClick: ()=>setSidebarOpen(true)
                         }, void 0, false, {
                             fileName: "[project]/app/displays/[id]/page.jsx",
-                            lineNumber: 213,
+                            lineNumber: 275,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -2499,12 +2576,12 @@ function DisplayDetailPage() {
                                     className: "w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin"
                                 }, void 0, false, {
                                     fileName: "[project]/app/displays/[id]/page.jsx",
-                                    lineNumber: 217,
+                                    lineNumber: 279,
                                     columnNumber: 71
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/displays/[id]/page.jsx",
-                                lineNumber: 217,
+                                lineNumber: 279,
                                 columnNumber: 15
                             }, this) : !display ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
                                 className: "p-12 text-center border-dashed border-border/60 bg-muted/10 shadow-none",
@@ -2513,7 +2590,7 @@ function DisplayDetailPage() {
                                         className: "w-12 h-12 mx-auto text-muted-foreground/50 mb-4"
                                     }, void 0, false, {
                                         fileName: "[project]/app/displays/[id]/page.jsx",
-                                        lineNumber: 220,
+                                        lineNumber: 282,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -2521,7 +2598,7 @@ function DisplayDetailPage() {
                                         children: "Player non trovato"
                                     }, void 0, false, {
                                         fileName: "[project]/app/displays/[id]/page.jsx",
-                                        lineNumber: 221,
+                                        lineNumber: 283,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2529,13 +2606,13 @@ function DisplayDetailPage() {
                                         children: "Torna ai player"
                                     }, void 0, false, {
                                         fileName: "[project]/app/displays/[id]/page.jsx",
-                                        lineNumber: 222,
+                                        lineNumber: 284,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/displays/[id]/page.jsx",
-                                lineNumber: 219,
+                                lineNumber: 281,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
                                 children: [
@@ -2548,7 +2625,7 @@ function DisplayDetailPage() {
                                         onProjectionModeChange: updateProjectionMode
                                     }, void 0, false, {
                                         fileName: "[project]/app/displays/[id]/page.jsx",
-                                        lineNumber: 226,
+                                        lineNumber: 288,
                                         columnNumber: 17
                                     }, this),
                                     hasMultipleScreens && duplicateContents.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$app$2f$displays$2f5b$id$5d2f$components$2f$ExtendedContentSection$2e$jsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ExtendedContentSection"], {
@@ -2557,7 +2634,7 @@ function DisplayDetailPage() {
                                         onToggleExtend: toggleExtendContent
                                     }, void 0, false, {
                                         fileName: "[project]/app/displays/[id]/page.jsx",
-                                        lineNumber: 236,
+                                        lineNumber: 298,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2575,36 +2652,36 @@ function DisplayDetailPage() {
                                                 onCommand: (cmd)=>sendCommand(cmd, screen.id, "screen")
                                             }, screen.id, false, {
                                                 fileName: "[project]/app/displays/[id]/page.jsx",
-                                                lineNumber: 245,
+                                                lineNumber: 307,
                                                 columnNumber: 21
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/app/displays/[id]/page.jsx",
-                                        lineNumber: 243,
+                                        lineNumber: 305,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true)
                         }, void 0, false, {
                             fileName: "[project]/app/displays/[id]/page.jsx",
-                            lineNumber: 215,
+                            lineNumber: 277,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/displays/[id]/page.jsx",
-                    lineNumber: 212,
+                    lineNumber: 274,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/displays/[id]/page.jsx",
-            lineNumber: 210,
+            lineNumber: 272,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/displays/[id]/page.jsx",
-        lineNumber: 209,
+        lineNumber: 271,
         columnNumber: 5
     }, this);
 }

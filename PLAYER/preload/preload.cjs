@@ -55,11 +55,6 @@ contextBridge.exposeInMainWorld("QR", {
 });
 
 
-
-
-
-
-
 // 5) Supabase API
 contextBridge.exposeInMainWorld("supabaseAPI", {
   getClient: () => supabase,
@@ -119,9 +114,9 @@ contextBridge.exposeInMainWorld("supabaseAPI", {
         width: screenInfo.width,
         height: screenInfo.height,
         is_primary: screenInfo.is_primary,
-        screen_index: screenInfo.screen_index,
         resolution: screenInfo.resolution,
-        orientation: screenInfo.orientation
+        orientation: screenInfo.orientation,
+        windowindex: screenInfo.windowIndex
       });
     return { error };
   },
@@ -260,8 +255,8 @@ contextBridge.exposeInMainWorld("SupaRT", {
 contextBridge.exposeInMainWorld("System", {
   getDisplays: () => ipcRenderer.invoke("get-displays"),
   getMetrics: () => ipcRenderer.invoke("get-system-metrics"),
-  setBrightness: (level) => ipcRenderer.invoke("set-display-brightness", level),
-  setResolution: (width, height) => ipcRenderer.invoke("set-display-resolution", { width, height }),
+  setBrightness: (windowindex, level) => ipcRenderer.invoke("set-display-brightness", { windowindex, level }),
+  setResolution: (hardware_id, width, height) => ipcRenderer.invoke("set-display-resolution", { hardware_id, width, height }),
   getCurrentDisplay: () => ipcRenderer.invoke("get-current-display")
 
 });
@@ -270,4 +265,10 @@ contextBridge.exposeInMainWorld("SystemEvents", {
   onDisplayAdded: (cb) => ipcRenderer.on("display-added", (_, d) => cb(d)),
   onDisplayRemoved: (cb) => ipcRenderer.on("display-removed", (_, d) => cb(d)),
   onDisplayChanged: (cb) => ipcRenderer.on("display-changed", (_, payload) => cb(payload)),
+  onTopologyChanged: (cb) => ipcRenderer.on("display-topology-changed", cb)
+});
+
+contextBridge.exposeInMainWorld("CursorAPI", {
+  hideCursor: (displayId) => ipcRenderer.send("hide-cursor", displayId),
+  showCursor: (displayId) => ipcRenderer.send("show-cursor", displayId)
 });

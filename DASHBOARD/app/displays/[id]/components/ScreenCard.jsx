@@ -1,12 +1,37 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Monitor, PlayCircle, ChevronDown, ChevronUp, Maximize2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useSupabase } from "@/app/providers";
 
 export function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistChange, onSettingChange, onCommand }) {
   const [brightness, setBrightness] = useState(screen.brightness || 100);
   const [resolution, setResolution] = useState(screen.resolution || `${screen.width}x${screen.height}`);
+  const supabase = useSupabase();
+  
+  const updateScreenBrightness = useCallback(async (screenId, level) => {
+    const { error } = await supabase
+      .from("display_screens")
+      .update({ brightness: level })
+      .eq("id", screenId);
+    if (!error) {
+      await onCommand("screen_brightness", screenId, "screen");
 
+    }
+  }, [supabase, onCommand]);
+
+
+  const updateScreenRisolution = useCallback(async (screenId, resolution) => {
+    const { error } = await supabase
+      .from("display_screens")
+      .update({ resolution: resolution })
+      .eq("id", screenId);
+    if (!error) {
+      await onCommand("screen_brightness", screenId, "screen");
+
+    }
+  }, [supabase, onCommand]);
+  
   return (
     <div className={`border rounded-xl overflow-hidden transition-all duration-300 ${expanded ? "bg-card shadow-md border-primary/20" : "bg-card border-border/40 hover:border-border"}`}>
       <div 
@@ -19,7 +44,7 @@ export function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistCh
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-lg text-foreground">Schermo {screen.screen_index + 1}</span>
+              <span className="font-semibold text-lg text-foreground">Schermo {screen.windowindex}</span>
               {screen.is_primary && <Badge variant="secondary" className="text-[10px] font-medium">Main</Badge>}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -71,7 +96,7 @@ export function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistCh
                 <span className="text-sm font-medium w-12 text-center">{brightness}%</span>
                 <Button 
                   size="sm"
-                  onClick={() => onCommand(`set_brightness:${brightness}`)}
+                  onClick={() => updateScreenBrightness(screen.id, brightness)}
                   className="h-8 text-xs"
                 >
                   Applica
@@ -95,7 +120,7 @@ export function ScreenCard({ screen, playlists, expanded, onToggle, onPlaylistCh
                   variant="outline" 
                   size="sm"
                   className="h-10 px-4"
-                  onClick={() => onCommand(`set_resolution:${resolution}`)}
+                  onClick={() => updateScreenRisolution(screen.id, resolution)}
                 >
                   Set
                 </Button>

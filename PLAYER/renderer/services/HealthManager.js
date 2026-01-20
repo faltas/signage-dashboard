@@ -10,21 +10,23 @@ export class HealthManager {
 
   startHeartbeat(displayId) {
     const intervalMs = this.env.HEARBEAT_MS;
-
+  
     const sendBeat = async () => {
       try {
         const health = await collectHealthMetrics(displayId);
         await window.supabaseAPI.updateHealth(displayId, health);
         logInfo("Heartbeat + Health updated");
-		await window.supabaseAPI.updateLastSeen(displayId);
-		logInfo("Heartbeat + aggiornata last_seen_at");
+        await window.supabaseAPI.updateLastSeen(displayId);
+        logInfo("Heartbeat + aggiornata last_seen_at");
       } catch (err) {
         logError("Error sending heartbeat:", err);
       }
     };
-
+  
     sendBeat();
-    this.heartbeatInterval = setInterval(sendBeat, intervalMs);
+    this.heartbeatInterval = setInterval(() => {
+      sendBeat().catch(err => logError("Unhandled heartbeat error:", err));
+    }, intervalMs);
   }
 
   stopHeartbeat() {

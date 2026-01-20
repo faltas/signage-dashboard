@@ -62,7 +62,7 @@ export default function DisplayDetailPage() {
         playlists:playlist_id ( id, name )
       `)
       .eq("display_id", id)
-      .order("screen_index", { ascending: true });
+      .order("windowindex", { ascending: true });
 
     setScreens(screensData || []);
 
@@ -119,14 +119,76 @@ export default function DisplayDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    loadData();
-    const channel = supabase
-      .channel(`display-detail-${id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "displays", filter: `id=eq.${id}` }, loadData)
-      .on("postgres_changes", { event: "*", schema: "public", table: "display_screens", filter: `display_id=eq.${id}` }, loadData)
-      .subscribe();
+  
+    loadData(); // primo caricamento
+  
+    const channel = supabase.channel(`display-detail-${id}`);
+  
+    // 1. Cambi nel record del display
+    channel.on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "displays", filter: `id=eq.${id}` },
+      (payload) => {
+        setDisplay(payload.new);
+      }
+    );
+  
+    // 2. Cambi negli screen (aggiunta, rimozione, update)
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "display_screens", filter: `display_id=eq.${id}` },
+      async () => {
+        const { data } = await supabase
+          .from("display_screens")
+          .select("*, playlists:playlist_id (id, name)")
+          .eq("display_id", id)
+          .order("windowindex", { ascending: true });
+  
+        setScreens(data || []);
+      }
+    );
+  
+    // 3. Cambi negli items delle playlist
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "playlist_items" },
+      async (payload) => {
+        const plId = payload.new?.playlist_id || payload.old?.playlist_id;
+        if (!plId) return;
+  
+        const { data } = await supabase
+          .from("playlist_items")
+          .select("*, contents(*)")
+          .eq("playlist_id", plId)
+          .order("position", { ascending: true });
+  
+        setPlaylistItems(prev => ({ ...prev, [plId]: data || [] }));
+      }
+    );
+  
+    // 4. Nuovi log
+    channel.on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "display_logs", filter: `display_id=eq.${id}` },
+      (payload) => {
+        setLogs(prev => [payload.new, ...prev.slice(0, 19)]);
+      }
+    );
+  
+    // 5. Nuovi screenshot
+    channel.on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "display_screenshots", filter: `display_id=eq.${id}` },
+      (payload) => {
+        setScreenshots(prev => [payload.new, ...prev.slice(0, 3)]);
+      }
+    );
+  
+    channel.subscribe();
+  
     return () => supabase.removeChannel(channel);
   }, [id, supabase, loadData]);
+
 
   const sendCommand = useCallback(async (cmd, targetId, targetType = "display") => {
     const cmdTargetId = targetId || id;
@@ -137,7 +199,7 @@ export default function DisplayDetailPage() {
     });
     await supabase.from("display_commands").insert({
       display_id: id,
-      command_type: cmd,
+      type: cmd,
       params: { target_id: cmdTargetId, target_type: targetType },
     });
   }, [id, supabase]);
@@ -173,7 +235,7 @@ export default function DisplayDetailPage() {
             }
             contentMap.get(contentId).screens.push({
               screenId: screen.id,
-              screenIndex: screen.screen_index,
+              screenIndex: screen.windowindex,
               playlistItemId: item.id
             });
           }

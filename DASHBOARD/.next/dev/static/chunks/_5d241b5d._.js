@@ -1567,7 +1567,7 @@ function useDisplays() {
         wall_id,
         projection_mode,
         walls:wall_id ( id, name, type, rows, columns ),
-        display_screens ( id, screen_index, width, height, is_primary, resolution )
+        display_screens ( id, windowindex, width, height, is_primary, resolution )
       `).not("user_id", "is", null).order("created_at", {
             ascending: false
         });
@@ -1576,21 +1576,67 @@ function useDisplays() {
     }
     async function SavePlayerName(id, name) {
         const { error } = await supabase.from("displays").update({
-            name: name
+            name
         }).eq("id", id);
-        if (error) console.error("Errore aggiornamento nome:", error);
-        return false;
-        //TURBOPACK unreachable
-        ;
+        if (error) {
+            console.error("Errore aggiornamento nome:", error);
+            return false;
+        }
+        // Aggiorna solo il record modificato
+        setDisplays((prev)=>prev.map((d)=>d.id === id ? {
+                    ...d,
+                    name
+                } : d));
+        return true;
     }
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "useDisplays.useEffect": ()=>{
             load();
-            const channel = supabase.channel("displays-realtime").on("postgres_changes", {
-                event: "*",
+            const channel = supabase.channel("displays-realtime");
+            // UPDATE → aggiorna solo quel display
+            channel.on("postgres_changes", {
+                event: "UPDATE",
                 schema: "public",
                 table: "displays"
-            }, load).subscribe();
+            }, {
+                "useDisplays.useEffect": (payload)=>{
+                    setDisplays({
+                        "useDisplays.useEffect": (prev)=>prev.map({
+                                "useDisplays.useEffect": (d)=>d.id === payload.new.id ? payload.new : d
+                            }["useDisplays.useEffect"])
+                    }["useDisplays.useEffect"]);
+                }
+            }["useDisplays.useEffect"]);
+            // INSERT → aggiungi solo il nuovo display
+            channel.on("postgres_changes", {
+                event: "INSERT",
+                schema: "public",
+                table: "displays"
+            }, {
+                "useDisplays.useEffect": (payload)=>{
+                    setDisplays({
+                        "useDisplays.useEffect": (prev)=>[
+                                payload.new,
+                                ...prev
+                            ]
+                    }["useDisplays.useEffect"]);
+                }
+            }["useDisplays.useEffect"]);
+            // DELETE → rimuovi solo quello eliminato
+            channel.on("postgres_changes", {
+                event: "DELETE",
+                schema: "public",
+                table: "displays"
+            }, {
+                "useDisplays.useEffect": (payload)=>{
+                    setDisplays({
+                        "useDisplays.useEffect": (prev)=>prev.filter({
+                                "useDisplays.useEffect": (d)=>d.id !== payload.old.id
+                            }["useDisplays.useEffect"])
+                    }["useDisplays.useEffect"]);
+                }
+            }["useDisplays.useEffect"]);
+            channel.subscribe();
             return ({
                 "useDisplays.useEffect": ()=>supabase.removeChannel(channel)
             })["useDisplays.useEffect"];

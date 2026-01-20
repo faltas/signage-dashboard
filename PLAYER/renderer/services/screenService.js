@@ -18,7 +18,7 @@ export async function syncScreens(config, displayInfo) {
     for (const p of physicalDisplays) {
       const screenInfo = {
         hardware_id: p.id,
-        screen_index: p.isPrimary ? 0 : null,
+        windowIndex: p.windowsIndex,
         resolution: `${p.width}x${p.height}`,
         width: p.width,
         height: p.height,
@@ -50,7 +50,7 @@ export async function syncScreens(config, displayInfo) {
     if (!logicalIds.includes(String(p.id))) {
       const screenInfo = {
         hardware_id: String(p.id),
-        screen_index: p.isPrimary ? 0 : null,
+        windowIndex: p.windowsIndex,
         width: p.width,
         height: p.height,
         is_primary: p.isPrimary,
@@ -74,51 +74,3 @@ export async function syncScreens(config, displayInfo) {
   }
 }
 
-// Eventi sistema → supabase
-export function setupRealtimeScreenEvents(config) {
-  window.SystemEvents.onDisplayAdded(async (p) => {
-    logInfo("Nuovo display collegato:", p.id);
-
-    const screenInfo = {
-      hardware_id: p.id,
-      screen_index: p.isPrimary ? 0 : null,
-      width: p.width || p.size.width,
-      height: p.height || p.size.height,
-      is_primary: p.isPrimary,
-      resolution: `${p.width || p.size.width}x${p.height || p.size.height}`
-    };
-
-    await window.supabaseAPI.InsertScreens(config.displayId, screenInfo);
-    logInfo("Screen registrato nel cloud:", p.id);
-  });
-
-  window.SystemEvents.onDisplayRemoved(async (p) => {
-    logInfo("Display scollegato:", p.id);
-
-    const { data: logicalScreens } = await window.supabaseAPI.fetchScreensInfo(config.displayId);
-    const screen = logicalScreens.find(s => Number(s.hardware_id) === p.id);
-
-    if (screen) {
-      await window.supabaseAPI.DeleteScreen(screen.id);
-      logInfo("Screen rimosso dal cloud:", screen.id);
-    }
-  });
-
-  window.SystemEvents.onDisplayChanged(async (p) => {
-    logInfo("Display modificato:", p.id);
-
-    const { data: logicalScreens } = await window.supabaseAPI.fetchScreensInfo(config.displayId);
-    const screen = logicalScreens.find(s => s.hardware_id === p.id);
-
-    if (screen) {
-      await window.supabaseAPI.UpdateScreen(screen.id, {
-        width: p.size.width,
-        height: p.size.height,
-        is_primary: p.isPrimary,
-        resolution: `${p.size.width}x${p.size.height}`
-      });
-
-      logInfo("Screen aggiornato nel cloud:", screen.id);
-    }
-  });
-}

@@ -9,11 +9,28 @@ import { WaitingScreen } from "./components/ScreenComponents.js";
 // Registry dei loop per screen: { timerId, cancelled }
 const screenLoops = new Map();
 
+function stopScreenLoop(screenId) {
+  const loop = screenLoops.get(screenId);
+  if (!loop) return;
+  loop.cancelled = true;
+  if (loop.timerId) clearTimeout(loop.timerId);
+  screenLoops.delete(screenId);
+}
+
+// nuovo: stop di TUTTI i loop
+function stopAllScreenLoops() {
+  for (const screenId of screenLoops.keys()) {
+    stopScreenLoop(screenId);
+  }
+}
+
 /**
  * Starts the rendering process for all screens managed by the player state.
  */
 export function startRenderLoop(state, setPlayerContent) {
   state.clearRenderTimeout();
+
+  stopAllScreenLoops();
 
   const myScreenId = state.currentScreenId;
   const screens = state.screens || [];
@@ -23,6 +40,14 @@ export function startRenderLoop(state, setPlayerContent) {
   const targetScreens = myScreenId
     ? screens.filter(s => String(s.id) === String(myScreenId))
     : screens;
+
+  //  stoppa eventuali loop di screen che non sono più target 
+  const targetIds = new Set(targetScreens.map(s => s.id)); 
+  for (const existingId of screenLoops.keys()) { 
+    if (!targetIds.has(existingId)) { 
+      stopScreenLoop(existingId); 
+    } 
+  }
 
   targetScreens.forEach(screen => {
     const playlistData = screenPlaylists[screen.id];
@@ -64,16 +89,6 @@ function getOrCreateScreenContainer(screen) {
   return container;
 }
 
-/**
- * Stoppa il loop di uno screen, se esiste.
- */
-function stopScreenLoop(screenId) {
-  const loop = screenLoops.get(screenId);
-  if (!loop) return;
-  loop.cancelled = true;
-  if (loop.timerId) clearTimeout(loop.timerId);
-  screenLoops.delete(screenId);
-}
 
 /**
  * Manages an independent, synchronized render loop for a specific screen.
@@ -95,6 +110,7 @@ function startIndependentLoop(screen, container, state) {
 
       if (!playlistData?.items?.length) {
         container.innerHTML = WaitingScreen();
+        stopScreenLoop(screen.id);
         return;
       }
 
@@ -155,7 +171,10 @@ async function renderToContainer(container, item, content, screen, state) {
   const localPath = await getAssetPath(item, content);
   if (!localPath) return;
 
+  // Prendi il vecchio layer (solo uno)
   const oldLayer = container.querySelector(".active-layer");
+
+  // Crea il nuovo layer
   const newLayer = createLayer();
 
   try {
@@ -167,13 +186,16 @@ async function renderToContainer(container, item, content, screen, state) {
       newLayer.innerHTML = VideoRenderer(localPath, isExtended ? "cover" : "contain");
     }
 
-    // se è la prima volta che metti contenuto, pulisci eventuale WaitingScreen
+    // Se è il primo contenuto, pulisci eventuale WaitingScreen
     if (!oldLayer && container.innerHTML.trim()) {
       container.innerHTML = "";
     }
 
     container.appendChild(newLayer);
+
+    // Transizione corretta
     transitionLayers(newLayer, oldLayer);
+
   } catch (err) {
     logError("Rendering Error:", err);
   }
@@ -181,12 +203,25 @@ async function renderToContainer(container, item, content, screen, state) {
 
 async function getAssetPath(item, content) {
   try {
-    return getCachedAsset(item.id) || (await window.supabaseAPI.getCachedContent(content));
+    const cached = getCachedAsset(item.id);
+    if (cached) return cached;
+
+    const local = await window.supabaseAPI.getCachedContent(content);
+    if (!local) {
+      logError("Asset not available locally nor cached:", {
+        itemId: item.id,
+        contentId: content.id
+      });
+      return null;
+    }
+
+    return local;
   } catch (err) {
     logError("Asset Loading Error:", err);
     return null;
   }
 }
+
 
 function createLayer() {
   const layer = document.createElement("div");
@@ -199,12 +234,14 @@ function createLayer() {
 function transitionLayers(newLayer, oldLayer) {
   requestAnimationFrame(() => {
     newLayer.style.opacity = "1";
+
     if (oldLayer) {
       oldLayer.style.opacity = "0";
       setTimeout(() => oldLayer.remove(), 800);
     }
   });
 }
+
 
 async function renderScene(layer, content, state) {
   const sceneId = content.scene_id;

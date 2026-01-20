@@ -1,6 +1,6 @@
 // renderer/services/DisplayManager.js - Complete Real-time Events
 import { logInfo, logError } from "../utils/logger.js";
-import { syncScreens, setupRealtimeScreenEvents } from "./screenService.js";
+import { syncScreens } from "./screenService.js";
 import { computeScreenMapping } from "./mappingService.js";
 
 export class DisplayManager {
@@ -91,11 +91,38 @@ export class DisplayManager {
   }
   
 
+  async ScreenRealTime(displayInfo) {
+    let pending = false;
+    let lastRun = 0;
+    const DEBOUNCE_MS = 1000;
+  
+    const runSync = async () => {
+      const now = Date.now();
+      if (pending && now - lastRun < DEBOUNCE_MS) return;
+      pending = true;
+      lastRun = now;
+  
+      try {
+        logInfo("Topologia schermi cambiata → syncScreens() debounced");
+        window.dispatchEvent(new Event("resize"));
+        await this.syncScreens(displayInfo);
+      } catch (err) {
+        logError("Errore in ScreenRealTime sync:", err);
+      } finally {
+        pending = false;
+      }
+    };
+  
+    await window.SystemEvents.onTopologyChanged(runSync);
+  }
+  
+
   /**
    * Setup complete real-time event listeners
    * @param {Object} callbacks - Callbacks for different events
    *   - onPaired: Called when display gets paired
    *   - onScreenPlaylistChanged: Called when playlist_id changes
+   *   - OnScreenChange: Called when 
    *   - onPlaylistItemsChanged: Called when playlist items change
    *   - onCommandReceived: Called when remote command received
    */
@@ -110,15 +137,16 @@ export class DisplayManager {
         logInfo("Display row changed:", payload);
         
         const newRecord = payload.new;
-                const oldRecord = payload.old;
+        const oldRecord = payload.old;
 
         // Check if display got paired (pairing_code removed, user_id set)
         if (!newRecord?.pairing_code != oldRecord?.paring_code && newRecord?.user_id != oldRecord?.user_id) {
-          logInfo("🎉 Display has been PAIRED! User ID:", newRecord.user_id);
+          logInfo(" Display has been PAIRED! User ID:", newRecord.user_id);
           if (callbacks.onPaired)
             callbacks.onPaired(newRecord);
         }
-
+		
+	
         if (oldRecord?.status !== newRecord?.status) {
           logInfo("Status changed:", oldRecord?.status, "→", newRecord?.status);
         }
@@ -126,7 +154,7 @@ export class DisplayManager {
       this.realtimeChannels.push(displayChannel);
 
       // 2. Listen to screen-specific playlist changes
-      const screensChannel = window.SupaRT.onScreenRowChange(displayId, (payload) => {
+      const screensChannel = window.SupaRT.onScreenRowChange(displayId, async (payload) => {
         logInfo("Screen record changed:", payload.eventType, payload);
         const newScreen = payload.new;
         const oldScreen = payload.old;
@@ -137,18 +165,19 @@ export class DisplayManager {
             if (callbacks.onScreenPlaylistChanged) {
               callbacks.onScreenPlaylistChanged(newScreen.id, newScreen.playlist_id);
             }
-          } else {
-            // Other update (resolution, etc)
-            if (callbacks.onScreensUpdated) callbacks.onScreensUpdated();
-          }
-        } else if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
-          if (callbacks.onScreensUpdated) callbacks.onScreensUpdated();
+          } 
+          else if (newScreen?.brightness != oldScreen?.brightness) {
+            await window.System.setBrightness(newScreen.windowindex, newScreen.brightness);
+          } 
+        } 
+        
+        else if (payload.eventType === 'INSERT' || payload.eventType === 'DELETE') {
+          if (callbacks.onScreensUpdated) 
+            callbacks.onScreensUpdated();
         }
       });
       this.realtimeChannels.push(screensChannel);
 
-      // 3. Setup screen events (physical monitor changes)
-      setupRealtimeScreenEvents(this.config);
 
       logInfo("✅ Real-time events setup complete");
       

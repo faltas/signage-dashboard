@@ -25,6 +25,7 @@ export function createPlayerEngine(env, setPlayerContent, currentDisplay) {
   const commandManager = new CommandManager();
   const tokenManager = new TokenManager(env);
 
+
   // -------------------------------------------------------------
   // INIT
   // -------------------------------------------------------------
@@ -64,6 +65,9 @@ export function createPlayerEngine(env, setPlayerContent, currentDisplay) {
   // -------------------------------------------------------------
   async function setupDisplay() {
     try {
+	  
+	  //const display = await window.System.getCurrentDisplay();
+	  //await window.CursorAPI.hideCursor(display.id);
       const regResult = await displayManager.registerIfNeeded();
       if (!regResult.displayId_Found) config = regResult.config;
 
@@ -97,9 +101,11 @@ export function createPlayerEngine(env, setPlayerContent, currentDisplay) {
         setPlayerContent(ErrorScreen("Display configuration error"));
         return { success: false };
       }
-
-      await displayManager.syncScreens(displayInfo);
-
+	  
+	  await displayManager.syncScreens(displayInfo);
+	  
+	  await displayManager.ScreenRealTime(displayInfo);
+	  
       const { data: initialScreens } = await window.supabaseAPI.fetchScreensInfo(config.displayId);
       PlayerState.setScreens(initialScreens);
 

@@ -4,6 +4,15 @@ const path = require("path");
 
 let windowsByDisplayId = {};
 
+function broadcastTopologyChanged() {
+  for (const id in windowsByDisplayId) {
+    const win = windowsByDisplayId[id];
+    if (win && !win.isDestroyed()) {
+      win.webContents.send("display-topology-changed");
+    }
+  }
+}
+
 // Create a window for a specific physical display
 function createWindowForDisplay(display) {
   const win = new BrowserWindow({
@@ -53,10 +62,28 @@ function removeWindowForDisplay(displayId) {
   }
 }
 
+function getWindowsDisplayIndex(screens) {
+  // Ordina i display come fa Windows
+  const sorted = [...screens].sort((a, b) => {
+    if (a.bounds.x === b.bounds.x) {
+      return a.bounds.y - b.bounds.y;
+    }
+    return a.bounds.x - b.bounds.x;
+  });
+
+  // Assegna l’indice Windows
+  return sorted.map((d, i) => ({
+    ...d,
+    windowsIndex: i + 1, // DISPLAY1, DISPLAY2, DISPLAY3...
+    windowsName: `DISPLAY${i + 1}`
+  }));
+}
+
+
 // IPC: displays info (unchanged)
 ipcMain.handle("get-displays", () => {
   const primaryId = screen.getPrimaryDisplay().id;
-  return screen.getAllDisplays().map(d => ({
+  const screens = screen.getAllDisplays().map(d => ({
     id: d.id,
     width: d.size.width,
     height: d.size.height,
@@ -66,6 +93,7 @@ ipcMain.handle("get-displays", () => {
     y: d.bounds.y,
     isPrimary: d.id === primaryId
   }));
+  return getWindowsDisplayIndex(screens);
 });
 
 // NEW: which physical display is THIS window on?
@@ -106,40 +134,84 @@ ipcMain.handle("get-system-metrics", async () => {
   };
 });
 
-ipcMain.handle("set-display-brightness", (event, level) => {
-  const { exec } = require("child_process");
-  console.log(`Setting brightness to: ${level}`);
-  
-  if (process.platform === "win32") {
-    exec(`powershell (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,${level})`);
-  } else if (process.platform === "linux") {
-    exec(`xrandr --output $(xrandr | grep " connected" | cut -f1 -d" ") --brightness ${level / 100}`);
+ipcMain.on("hide-cursor", (event, displayId) => {
+  const win = windowsByDisplayId[displayId];
+  if (win && !win.isDestroyed()) {
+    win.setCursorVisibility(false);
   }
-  return true;
 });
 
-ipcMain.handle("set-display-resolution", (event, { width, height }) => {
-  const { exec } = require("child_process");
-  console.log(`Setting resolution to: ${width}x${height}`);
-  
-  if (process.platform === "win32") {
-    exec(`powershell -Command "& { Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Screen]::PrimaryScreen.Bounds }"`);
-  } else if (process.platform === "linux") {
-    exec(`xrandr --size ${width}x${height}`);
+ipcMain.on("show-cursor", (event, displayId) => {
+  const win = windowsByDisplayId[displayId];
+  if (win && !win.isDestroyed()) {
+    win.setCursorVisibility(true);
   }
-  return true;
 });
+
+
+
+ipcMain.handle("set-display-brightness", async (event, { windowindex, level }) => {
+  const { exec } = require("child_process");
+
+  level = Math.max(0, Math.min(100, Number(level)));
+  windowindex = Number(windowindex);
+
+  console.log(`Setting brightness for monitor ${windowindex} to ${level}`);
+
+  return new Promise(resolve => {
+    let cmd = null;
+    // dX = monitor X
+    cmd = `ClickMonitorDDC_7_2.exe d${windowindex} b ${level}`;
+
+    if (!cmd) return resolve(false);
+
+    exec(cmd, (err, stdout, stderr) => {
+      if (err) {
+        console.error("Brightness error:", err);
+        return resolve(false);
+      }
+      resolve(true);
+    });
+  });
+});
+
+
+ipcMain.handle("set-display-resolution", async (event, { hardware_id, width, height }) => {
+  const { exec } = require("child_process");
+
+  console.log(`Setting resolution for monitor ${hardware_id} to ${width}x${height}`);
+
+  return new Promise(resolve => {
+    let cmd = null;
+    // QRes deve essere incluso nella tua app
+    // /d:X = monitor X
+    cmd = `QRes.exe /x:${width} /y:${height} /d:${hardware_id}`;
+
+    if (!cmd) return resolve(false);
+
+    exec(cmd, (err, stdout, stderr) => {
+      if (err) {
+        console.error("Resolution error:", err);
+        return resolve(false);
+      }
+      resolve(true);
+    });
+  });
+});
+
 
 // Multi-monitor lifecycle
 function setupDisplayEvents() {
   screen.on("display-added", (event, display) => {
     console.log("Display added:", display.id);
     createWindowForDisplay(display);
+	broadcastTopologyChanged();
   });
 
   screen.on("display-removed", (event, display) => {
     console.log("Display removed:", display.id);
     removeWindowForDisplay(display.id);
+	broadcastTopologyChanged();
   });
 }
 
